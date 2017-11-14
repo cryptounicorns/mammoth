@@ -1,0 +1,29 @@
+name: mammoth
+
+ghc-options: -Wall
+
+library:
+  source-dirs:
+    - src
+
+executables:
+  mammoth:
+    main: exe/Main.hs
+    dependencies:
+      - mammoth
+
+dependencies:
+  - base
+  - http-client
+  - lens
+  - influxdb
+  - servant
+  - servant-server
+  - text
+  - time
+  - transformers
+  - aeson
+  - vector
+  - wai
+  - wai-extra
+  - warp

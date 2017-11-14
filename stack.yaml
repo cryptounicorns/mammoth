@@ -1,0 +1,5 @@
+resolver: lts-9.12
+packages:
+  - '.'
+extra-deps:
+  - influxdb-1.2.2
