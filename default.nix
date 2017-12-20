@@ -1,4 +1,4 @@
-{ nixpkgs  ? import <nixpkgs> {}
+{ pkgs     ? import <nixpkgs> {}
 , compiler ? "ghc802"
 }:
-nixpkgs.pkgs.haskell.packages."${compiler}".callPackage ./mammoth.nix { }
+pkgs.haskell.packages."${compiler}".callPackage ./mammoth.nix { }

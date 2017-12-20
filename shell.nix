@@ -1,12 +1,12 @@
-{ nixpkgs ? import <nixpkgs> {}
+{ pkgs     ? import <nixpkgs> {}
 , compiler ? "ghc802"
 }:
 {
   env = (import ./default.nix {
-    inherit nixpkgs compiler;
+    inherit pkgs compiler;
   }).env;
 
-  buildInputs = with nixpkgs.pkgs; [
+  buildInputs = with pkgs; [
     stack
     cabal2nix
   ];
