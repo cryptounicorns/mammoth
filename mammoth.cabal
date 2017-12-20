@@ -1,0 +1,64 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: f4f61a9a7e39127d245b12e6eae901e3b10650d140c82ad51c61eb528bbbfd2e
+
+name:           mammoth
+version:        0.0.0
+build-type:     Simple
+cabal-version:  >= 1.10
+
+library
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , http-api-data
+    , http-client
+    , influxdb
+    , lens
+    , servant
+    , servant-docs
+    , servant-server
+    , text
+    , time
+    , transformers
+    , vector
+    , wai
+    , wai-extra
+    , warp
+  exposed-modules:
+      App
+      Mammoth.API
+      Mammoth.Server
+  other-modules:
+      Paths_mammoth
+  default-language: Haskell2010
+
+executable mammoth
+  main-is: exe/Main.hs
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , http-api-data
+    , http-client
+    , influxdb
+    , lens
+    , mammoth
+    , servant
+    , servant-docs
+    , servant-server
+    , text
+    , time
+    , transformers
+    , vector
+    , wai
+    , wai-extra
+    , warp
+  other-modules:
+      Paths_mammoth
+  default-language: Haskell2010
