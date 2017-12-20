@@ -1,18 +1,19 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module App where
 
-import Network.HTTP.Client (newManager, defaultManagerSettings)
-import Network.Wai
-import Network.Wai.Handler.Warp
-import Network.Wai.Middleware.RequestLogger (logStdoutDev)
-import Servant (serve)
-import System.IO
-import Mammoth.API (api)
-import Mammoth.Server (server)
+import           Mammoth.API                          (api)
+import           Mammoth.Server                       (server)
+import           Network.HTTP.Client                  (defaultManagerSettings, newManager)
+import           Network.Wai
+import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import           Servant                              (serve)
+import           System.IO
 
-run :: IO ()
+run ∷ IO ()
 run = do
   let port' = 3000
       settings =
@@ -21,7 +22,7 @@ run = do
         defaultSettings
   runSettings settings =<< mkApp
 
-mkApp :: IO Application
+mkApp ∷ IO Application
 mkApp = do
   mgr <- newManager defaultManagerSettings
   return $ logStdoutDev $ serve api $ server mgr
