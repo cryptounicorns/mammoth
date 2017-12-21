@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f4f61a9a7e39127d245b12e6eae901e3b10650d140c82ad51c61eb528bbbfd2e
+-- hash: 824718544e80f45a5b46ed9929409a5615e6679ed08091c0d1688abeb4a5c64a
 
 name:           mammoth
 version:        0.0.0
@@ -21,7 +21,6 @@ library
     , influxdb
     , lens
     , servant
-    , servant-docs
     , servant-server
     , text
     , time
@@ -33,6 +32,9 @@ library
   exposed-modules:
       App
       Mammoth.API
+      Mammoth.Markets
+      Mammoth.Markets.Tickers.API
+      Mammoth.Markets.Tickers.Handlers
       Mammoth.Server
   other-modules:
       Paths_mammoth
@@ -50,7 +52,6 @@ executable mammoth
     , lens
     , mammoth
     , servant
-    , servant-docs
     , servant-server
     , text
     , time
