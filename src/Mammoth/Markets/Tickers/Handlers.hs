@@ -25,21 +25,15 @@ import           Database.InfluxDB
   )
 import           Database.InfluxDB.Format    (field, key, string, time)
 import           Database.InfluxDB.Types     (Key (Key))
-import           Mammoth.Markets.Tickers.API
-  ( TickerData (..)
-  , TickerMetric
-  , TickerPoint (..)
-  , TickersApi
-  )
+import           Mammoth.Markets.Tickers.API (TickerData (..), TickerMetric, TickerPoint (..))
 import           Network.HTTP.Client         (Manager)
 import           Servant                     (Handler)
 
-getTickerData ∷ (
+getTickerData ∷
     Manager →
     String → String → TickerMetric →
     Maybe Integer → Maybe Integer → Maybe String →
     Handler TickerData
-    )
 getTickerData mgr marketName currencyPair metricName fromTime toTime resolution = do
   now <- liftIO $ fmap round ((* 1000) <$> getPOSIXTime)
   let weekAgo = now - 7 * 24 * 60 * 60 * 1000
@@ -52,7 +46,7 @@ getTickerData mgr marketName currencyPair metricName fromTime toTime resolution 
         (fromMilliseconds $ fromMaybe now toTime)
         (fromMaybe "1h" resolution)
   points <- liftIO $ fmap fromPoint <$> tickerPoints
-  return $ TickerData{..}
+  return TickerData{..}
 
 fromPoint ∷ TickerPoint → (Int64, Double)
 fromPoint p = (scaleTo Millisecond $ timestamp p, value p)
@@ -61,12 +55,12 @@ fromPoint p = (scaleTo Millisecond $ timestamp p, value p)
 fromMilliseconds ∷ Integer → UTCTime
 fromMilliseconds = posixSecondsToUTCTime . (/ 1000) . fromInteger
 
-getTickerPoints ∷ (
+getTickerPoints ∷
     Manager →
     String → String → TickerMetric →
     UTCTime → UTCTime → String →
-    IO (Vector TickerPoint))
-getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolution = do
+    IO (Vector TickerPoint)
+getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolution =
   query qparams $ formatQuery
     ("SELECT MEAN(" % key % ") AS " % key % " FROM " % key % "\
       \ WHERE time > " % time % " AND time < " % time % "\

@@ -10,7 +10,7 @@ module Mammoth.API
 where
 
 import           Mammoth.Markets (MarketsApi)
-import           Servant         ((:>), Capture, Proxy (Proxy))
+import           Servant         ((:>), Proxy (Proxy))
 
 type Api = "api" :> ApiV1
 type ApiV1 = "v1" :> MarketsApi

@@ -27,7 +27,7 @@ import           Database.InfluxDB
   , parseResultsWith
   )
 import           GHC.Generics          (Generic)
-import           Servant               ((:>), Capture, Get, JSON, Proxy (Proxy), QueryParam)
+import           Servant               ((:>), Capture, Get, JSON, QueryParam)
 import           Web.HttpApiData       (FromHttpApiData (parseUrlPiece), parseBoundedTextData)
 
 type TickersApi = "tickers"
