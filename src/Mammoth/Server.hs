@@ -1,6 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE UnicodeSyntax     #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Mammoth.Server (server) where
 
