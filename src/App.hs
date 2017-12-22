@@ -4,7 +4,7 @@
 
 module App where
 
-import           Mammoth.API                          (api)
+import           Mammoth.API                          (apiWithDocs)
 import           Mammoth.Server                       (server)
 import           Network.HTTP.Client                  (defaultManagerSettings, newManager)
 import           Network.Wai
@@ -25,4 +25,4 @@ run = do
 mkApp ∷ IO Application
 mkApp = do
   mgr <- newManager defaultManagerSettings
-  return $ logStdoutDev $ serve api $ server mgr
+  return $ logStdoutDev $ serve apiWithDocs $ server mgr

@@ -2,10 +2,11 @@
 
 module Mammoth.Server (server) where
 
-import           Mammoth.API                      (Api)
+import           Mammoth.API                      (ApiWithDocs, swaggerDoc)
 import           Mammoth.Markets.Tickers.Handlers (getTickerData)
 import           Network.HTTP.Client              (Manager)
-import           Servant                          (Server)
+import           Servant
+import           Servant.Swagger.UI               (swaggerSchemaUIServer)
 
-server ∷ Manager → Server Api
-server = getTickerData -- use <|> combinator to "compose" the handlers
+server ∷ Manager → Server ApiWithDocs
+server mgr = getTickerData mgr :<|> swaggerSchemaUIServer swaggerDoc

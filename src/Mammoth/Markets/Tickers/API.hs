@@ -14,10 +14,12 @@ module Mammoth.Markets.Tickers.API
   )
 where
 
-import           Data.Aeson            (FromJSON, ToJSON)
+import           Control.Lens
+import           Data.Aeson            (FromJSON, ToJSON, toJSON)
 import           Data.Int              (Int64)
+import           Data.Swagger
 import           Data.Time.Clock.POSIX (POSIXTime)
-import           Data.Vector           (Vector)
+import           Data.Vector           (Vector, generate)
 import           Database.InfluxDB
   ( Field (FieldFloat)
   , QueryResults (parseResults)
@@ -44,6 +46,8 @@ data TickerMetric = High | Low | Vol | Last | Buy | Sell
 instance FromHttpApiData TickerMetric where
     parseUrlPiece = parseBoundedTextData
 
+instance ToParamSchema TickerMetric
+
 data TickerData = TickerData {
     marketName   :: String,
     currencyPair :: String,
@@ -52,6 +56,13 @@ data TickerData = TickerData {
 
 instance ToJSON TickerData
 instance FromJSON TickerData
+
+instance ToSchema TickerData where
+    declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
+        & mapped.schema.description ?~ "Ticker data"
+        & mapped.schema.example ?~ toJSON (TickerData "bitfinex" "BTC-USD" (generate 5 mkPoint))
+        where
+            mkPoint i = ((1513901024 + fromIntegral i) * 1000, 17635.2 + fromIntegral i)
 
 type TickerPoints = Vector (Int64, Double)
 
