@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 824718544e80f45a5b46ed9929409a5615e6679ed08091c0d1688abeb4a5c64a
+-- hash: c9339a3e3b0a9fa9c5c1826cd3b4ecd6d719aff3e8bd382f81b0672d900cdced
 
 name:           mammoth
 version:        0.0.0
@@ -56,6 +56,9 @@ executable mammoth
     , mammoth
     , servant
     , servant-server
+    , servant-swagger
+    , servant-swagger-ui
+    , swagger2
     , text
     , time
     , transformers
