@@ -1,5 +1,5 @@
-{ mkDerivation, aeson, base, http-api-data, http-client, influxdb
-, lens, servant, servant-server, servant-swagger
+{ mkDerivation, aeson, base, envy, http-api-data, http-client
+, influxdb, lens, servant, servant-server, servant-swagger
 , servant-swagger-ui, stdenv, swagger2, text, time, transformers
 , vector, wai, wai-extra, warp
 }:
@@ -10,12 +10,12 @@ mkDerivation rec {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson base http-api-data http-client influxdb lens servant
+    aeson base envy http-api-data http-client influxdb lens servant
     servant-server servant-swagger servant-swagger-ui swagger2 text
     time transformers vector wai wai-extra warp
   ];
   executableHaskellDepends = [
-    aeson base http-api-data http-client influxdb lens servant
+    aeson base envy http-api-data http-client influxdb lens servant
     servant-server servant-swagger servant-swagger-ui swagger2 text
     time transformers vector wai wai-extra warp
   ];
