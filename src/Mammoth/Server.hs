@@ -9,4 +9,4 @@ import           Servant
 import           Servant.Swagger.UI               (swaggerSchemaUIServer)
 
 server ∷ Database.InfluxDB.QueryParams → Server ApiWithDocs
-server mgr = getTickerData mgr :<|> swaggerSchemaUIServer swaggerDoc
+server p = getTickerData p :<|> swaggerSchemaUIServer swaggerDoc
