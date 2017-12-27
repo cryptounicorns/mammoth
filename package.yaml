@@ -14,6 +14,7 @@ executables:
 
 dependencies:
   - base
+  - envy
   - http-api-data
   - http-client
   - lens

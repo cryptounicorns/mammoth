@@ -16,6 +16,7 @@ library
   build-depends:
       aeson
     , base
+    , envy
     , http-api-data
     , http-client
     , influxdb
@@ -49,6 +50,7 @@ executable mammoth
   build-depends:
       aeson
     , base
+    , envy
     , http-api-data
     , http-client
     , influxdb

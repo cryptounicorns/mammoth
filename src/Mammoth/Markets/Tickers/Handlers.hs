@@ -4,7 +4,6 @@
 
 module Mammoth.Markets.Tickers.Handlers (getTickerData) where
 
-import           Control.Lens                ((&), (.~))
 import           Control.Monad.IO.Class      (liftIO)
 import           Data.Int                    (Int64)
 import           Data.Maybe                  (fromMaybe)
@@ -15,30 +14,27 @@ import           Data.Vector                 (Vector)
 import           Database.InfluxDB
   ( Field (FieldString)
   , Precision (Millisecond)
+  , QueryParams
   , formatQuery
-  , manager
-  , precision
   , query
-  , queryParams
   , scaleTo
   , (%)
   )
 import           Database.InfluxDB.Format    (field, key, string, time)
 import           Database.InfluxDB.Types     (Key (Key))
 import           Mammoth.Markets.Tickers.API (TickerData (..), TickerMetric, TickerPoint (..))
-import           Network.HTTP.Client         (Manager)
 import           Servant                     (Handler)
 
 getTickerData ∷
-    Manager →
+    QueryParams →
     String → String → TickerMetric →
     Maybe Integer → Maybe Integer → Maybe String →
     Handler TickerData
-getTickerData mgr marketName currencyPair metricName fromTime toTime resolution = do
+getTickerData qparams marketName currencyPair metricName fromTime toTime resolution = do
   now <- liftIO $ fmap round ((* 1000) <$> getPOSIXTime)
   let weekAgo = now - 7 * 24 * 60 * 60 * 1000
       tickerPoints = getTickerPoints
-        mgr
+        qparams
         marketName
         currencyPair
         metricName
@@ -56,11 +52,11 @@ fromMilliseconds ∷ Integer → UTCTime
 fromMilliseconds = posixSecondsToUTCTime . (/ 1000) . fromInteger
 
 getTickerPoints ∷
-    Manager →
+    QueryParams →
     String → String → TickerMetric →
     UTCTime → UTCTime → String →
     IO (Vector TickerPoint)
-getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolution =
+getTickerPoints qparams marketName currencyPair metricName fromTime toTime resolution =
   query qparams $ formatQuery
     ("SELECT MEAN(" % key % ") AS " % key % " FROM " % key % "\
       \ WHERE time > " % time % " AND time < " % time % "\
@@ -73,10 +69,6 @@ getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolutio
     currencyPairField (FieldString $ toUpper $ pack currencyPair)
     resolution
     where
-      qparams = queryParams db
-        & manager .~ Right mgr
-        & precision .~ Millisecond
-      db = "gluttony"
       measurementName = "ticker"
       metricField = Key $ toLower $ pack $ show metricName
       metricLabel = Key "value"
