@@ -8,7 +8,7 @@ steps:
       records: true
 
   - imports:
-      align: global
+      align: file
       list_align: after_alias
       pad_module_names: true
       long_list_align: multiline
@@ -27,7 +27,7 @@ steps:
 
   - trailing_whitespace: {}
 
-columns: 120
+columns: 85
 newline: lf
 
 # Sometimes, language extensions are specified in a cabal file or from the

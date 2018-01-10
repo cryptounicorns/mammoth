@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c9339a3e3b0a9fa9c5c1826cd3b4ecd6d719aff3e8bd382f81b0672d900cdced
+-- hash: 14c7fe7c1990c21f18dbfca3fe136bc8e0fd1ab5ec24d974b88e09ca6b92b801
 
 name:           mammoth
 version:        0.0.0
@@ -35,10 +35,16 @@ library
   exposed-modules:
       App
       Mammoth.API
-      Mammoth.Markets
+      Mammoth.Markets.API
+      Mammoth.Markets.Server
       Mammoth.Markets.Tickers.API
+      Mammoth.Markets.Tickers.Changes.API
+      Mammoth.Markets.Tickers.Changes.Handlers
       Mammoth.Markets.Tickers.Handlers
+      Mammoth.Markets.Tickers.Metrics
+      Mammoth.Markets.Tickers.Server
       Mammoth.Server
+      Mammoth.Time
   other-modules:
       Paths_mammoth
   default-language: Haskell2010

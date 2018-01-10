@@ -2,17 +2,20 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE UnicodeSyntax     #-}
 
-module Mammoth.Markets.Tickers.Handlers (getTickerData) where
+module Mammoth.Markets.Tickers.Handlers
+  ( getTickerData
+  , getChangeData
+  )
+where
 
-import           Control.Lens                ((&), (.~))
-import           Control.Monad.IO.Class      (liftIO)
-import           Data.Int                    (Int64)
-import           Data.Maybe                  (fromMaybe)
-import           Data.Text                   (pack, toLower, toUpper)
-import           Data.Time.Clock             (UTCTime)
-import           Data.Time.Clock.POSIX       (getPOSIXTime, posixSecondsToUTCTime)
-import           Data.Vector                 (Vector)
-import           Database.InfluxDB
+import Control.Lens                             ((&), (.~))
+import Control.Monad.IO.Class                   (liftIO)
+import Data.Int                                 (Int64)
+import Data.Maybe                               (fromMaybe)
+import Data.Text                                (pack, toLower, toUpper)
+import Data.Time.Clock                          (UTCTime)
+import Data.Vector                              (Vector)
+import Database.InfluxDB
   ( Field (FieldString)
   , Precision (Millisecond)
   , formatQuery
@@ -23,19 +26,25 @@ import           Database.InfluxDB
   , scaleTo
   , (%)
   )
-import           Database.InfluxDB.Format    (field, key, string, time)
-import           Database.InfluxDB.Types     (Key (Key))
-import           Mammoth.Markets.Tickers.API (TickerData (..), TickerMetric, TickerPoint (..))
-import           Network.HTTP.Client         (Manager)
-import           Servant                     (Handler)
+import Database.InfluxDB.Format                 (field, key, string, time)
+import Database.InfluxDB.Types                  (Key (Key))
+import Mammoth.Markets.Tickers.API              (TickerData (..), TickerPoint (..))
+import Mammoth.Markets.Tickers.Changes.Handlers (getChangeData)
+import Mammoth.Markets.Tickers.Metrics          (Metric)
+import Mammoth.Time
+  ( fromMilliseconds
+  , getPOSIXMilliseconds
+  )
+import Network.HTTP.Client                      (Manager)
+import Servant                                  (Handler)
 
 getTickerData ∷
     Manager →
-    String → String → TickerMetric →
+    String → String → Metric →
     Maybe Integer → Maybe Integer → Maybe String →
     Handler TickerData
 getTickerData mgr marketName currencyPair metricName fromTime toTime resolution = do
-  now <- liftIO $ fmap round ((* 1000) <$> getPOSIXTime)
+  now <- liftIO $ getPOSIXMilliseconds
   let weekAgo = now - 7 * 24 * 60 * 60 * 1000
       tickerPoints = getTickerPoints
         mgr
@@ -51,16 +60,12 @@ getTickerData mgr marketName currencyPair metricName fromTime toTime resolution 
 fromPoint ∷ TickerPoint → (Int64, Double)
 fromPoint p = (scaleTo Millisecond $ timestamp p, value p)
 
--- Fuck, there is no function to create UTCTime from millis :(
-fromMilliseconds ∷ Integer → UTCTime
-fromMilliseconds = posixSecondsToUTCTime . (/ 1000) . fromInteger
-
 getTickerPoints ∷
     Manager →
-    String → String → TickerMetric →
+    String → String → Metric →
     UTCTime → UTCTime → String →
     IO (Vector TickerPoint)
-getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolution =
+getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolution = do
   query qparams $ formatQuery
     ("SELECT MEAN(" % key % ") AS " % key % " FROM " % key % "\
       \ WHERE time > " % time % " AND time < " % time % "\

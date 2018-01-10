@@ -11,7 +11,8 @@
             ["~/.config/fish",   "~/.config/fish"],
             ["~/.config/xonsh",  "~/.config/xonsh"],
             ["~/.xonshrc",       "~/.xonshrc"],
-            ["~/.gitconfig",     "~/.gitconfig"]
+            ["~/.gitconfig",     "~/.gitconfig"],
+            ["~/.ghci",          "~/.ghci"]
         ]
     },
     "environment": {

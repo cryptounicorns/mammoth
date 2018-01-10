@@ -10,17 +10,24 @@ module Mammoth.Markets.Tickers.API
   , TickerData(..)
   , TickerPoints
   , TickerPoint(..)
-  , TickerMetric
   )
 where
 
-import           Control.Lens
-import           Data.Aeson            (FromJSON, ToJSON, toJSON)
-import           Data.Int              (Int64)
-import           Data.Swagger
-import           Data.Time.Clock.POSIX (POSIXTime)
-import           Data.Vector           (Vector, generate)
-import           Database.InfluxDB
+import Control.Lens                        (mapped, (&), (?~))
+import Data.Aeson                          (FromJSON, ToJSON, toJSON)
+import Data.Int                            (Int64)
+import Data.Swagger
+  ( ToSchema
+  , declareNamedSchema
+  , defaultSchemaOptions
+  , description
+  , example
+  , genericDeclareNamedSchema
+  , schema
+  )
+import Data.Time.Clock.POSIX               (POSIXTime)
+import Data.Vector                         (Vector, generate)
+import Database.InfluxDB
   ( Field (FieldFloat)
   , QueryResults (parseResults)
   , getField
@@ -28,25 +35,29 @@ import           Database.InfluxDB
   , parseQueryField
   , parseResultsWith
   )
-import           GHC.Generics          (Generic)
-import           Servant               ((:>), Capture, Get, JSON, QueryParam)
-import           Web.HttpApiData       (FromHttpApiData (parseUrlPiece), parseBoundedTextData)
+import GHC.Generics                        (Generic)
+import Mammoth.Markets.Tickers.Changes.API (ChangesApi)
+import Mammoth.Markets.Tickers.Metrics     (Metric)
+import Servant
+  ( (:<|>)
+  , (:>)
+  , Capture
+  , Get
+  , JSON
+  , QueryParam
+  )
 
-type TickersApi = "tickers"
-  :> Capture "currencyPair" String
-  :> Capture "metric" TickerMetric
-  :> QueryParam "from" Integer
-  :> QueryParam "to" Integer
-  :> QueryParam "resolution" String
-  :> Get '[JSON] TickerData
-
-data TickerMetric = High | Low | Vol | Last | Buy | Sell
-    deriving (Eq, Show, Generic, Enum, Bounded)
-
-instance FromHttpApiData TickerMetric where
-    parseUrlPiece = parseBoundedTextData
-
-instance ToParamSchema TickerMetric
+type TickersApi
+   =  "markets"
+   :> Capture "marketName" String
+   :> "tickers"
+   :> Capture    "currencyPair" String
+   :> Capture    "metric"       Metric
+   :> QueryParam "from"         Integer
+   :> QueryParam "to"           Integer
+   :> QueryParam "resolution"   String
+   :> Get        '[JSON]        TickerData
+   :<|> ChangesApi
 
 data TickerData = TickerData {
     marketName   :: String,
@@ -56,7 +67,6 @@ data TickerData = TickerData {
 
 instance ToJSON TickerData
 instance FromJSON TickerData
-
 instance ToSchema TickerData where
     declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
         & mapped.schema.description ?~ "Ticker data"

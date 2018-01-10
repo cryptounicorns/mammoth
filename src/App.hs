@@ -4,14 +4,14 @@
 
 module App where
 
-import           Mammoth.API                          (apiWithDocs)
-import           Mammoth.Server                       (server)
-import           Network.HTTP.Client                  (defaultManagerSettings, newManager)
-import           Network.Wai
-import           Network.Wai.Handler.Warp
-import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
-import           Servant                              (serve)
-import           System.IO
+import Mammoth.API                          (apiWithDocs)
+import Mammoth.Server                       (server)
+import Network.HTTP.Client                  (defaultManagerSettings, newManager)
+import Network.Wai
+import Network.Wai.Handler.Warp
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import Servant                              (serve)
+import System.IO
 
 run ∷ IO ()
 run = do

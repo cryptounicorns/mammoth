@@ -6,6 +6,8 @@ pkgs.stdenv.mkDerivation {
   buildInputs = with pkgs; [
     influxdb
     stack
+    #haskellPackages.ghc-mod
     cabal2nix
-  ] ++ (import ./default.nix { inherit pkgs compiler; }).all;
+  ];
+  # ++ (import ./default.nix { inherit pkgs compiler; }).all;
 }
