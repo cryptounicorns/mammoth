@@ -1,7 +1,6 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
-{-# LANGUAGE UnicodeSyntax     #-}
+{-# LANGUAGE DataKinds     #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Mammoth.Markets (MarketsApi) where
 
