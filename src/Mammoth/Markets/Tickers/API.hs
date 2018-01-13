@@ -59,33 +59,40 @@ type TickersApi
    :> Get        '[JSON]        TickerData
    :<|> ChangesApi
 
-data TickerData = TickerData {
-    marketName   :: String,
-    currencyPair :: String,
-    points       :: TickerPoints
-} deriving (Eq, Show, Generic)
+data TickerData = TickerData
+  { marketName   :: String
+  , currencyPair :: String
+  , from         :: POSIXTime
+  , to           :: POSIXTime
+  , points       :: TickerPoints
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON TickerData
 instance FromJSON TickerData
 instance ToSchema TickerData where
-    declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
-        & mapped.schema.description ?~ "Ticker data"
-        & mapped.schema.example ?~ toJSON (TickerData "bitfinex" "BTC-USD" (generate 5 mkPoint))
-        where
-            mkPoint i = ((1513901024 + fromIntegral i) * 1000, 17635.2 + fromIntegral i)
+  declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
+    & mapped.schema.description ?~ "Ticker data"
+    & mapped.schema.example ?~ toJSON (TickerData
+                                       "bitfinex"
+                                       "BTC-USD"
+                                       (1513901024 * 1000)
+                                       (1513769299 * 1000)
+                                       (generate 5 mkTickerPoint))
+    where
+      mkTickerPoint i = ((1513901024 + fromIntegral i) * 1000, 17635.2 + fromIntegral i)
 
 type TickerPoints = Vector (Int64, Double)
 
-data TickerPoint = TickerPoint {
-    timestamp :: POSIXTime,
-    value     :: Double
-} deriving (Eq, Show, Generic)
+data TickerPoint = TickerPoint
+  { timestamp :: POSIXTime
+  , value     :: Double
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON TickerPoint
 instance FromJSON TickerPoint
 
 instance QueryResults TickerPoint where
-    parseResults prec' = parseResultsWith $ \_ _ columns fields -> do
-      timestamp <- getField "time" columns fields >>= parsePOSIXTime prec'
+    parseResults precision = parseResultsWith $ \_ _ columns fields -> do
+      timestamp <- getField "time" columns fields >>= parsePOSIXTime precision
       FieldFloat value <- getField "value" columns fields >>= parseQueryField
       return TickerPoint{..}

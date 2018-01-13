@@ -2,14 +2,14 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE UnicodeSyntax     #-}
 
-module Mammoth.Markets.Tickers.Changes.Handlers (getChangeData, getChange) where
+module Mammoth.Markets.Tickers.Changes.Handlers (getChange, getChangeData) where
 
 import Control.Lens                        ((&), (.~))
 import Control.Monad.IO.Class              (liftIO)
-import Data.Maybe                          (fromMaybe)
 import Data.Text                           (pack, toLower, toUpper)
 import Data.Time.Clock                     (UTCTime)
-import Data.Vector                         (Vector, head)
+import Data.Time.Clock.POSIX               (utcTimeToPOSIXSeconds)
+import Data.Vector                         (Vector, head, null)
 import Database.InfluxDB
   ( Field (FieldString)
   , Precision (Millisecond)
@@ -22,54 +22,59 @@ import Database.InfluxDB
   )
 import Database.InfluxDB.Format            (field, key, time)
 import Database.InfluxDB.Types             (Key (Key))
-import Mammoth.Markets.Tickers.Changes.API (ChangeData (..))
+import Mammoth.Markets.Tickers.Changes.API (Change (..), ChangeData (..))
 import Mammoth.Markets.Tickers.Metrics     (Metric)
-import Mammoth.Time                        (fromMilliseconds, getPOSIXMilliseconds)
+import Mammoth.Time                        (getWeekLimitedRange)
 import Network.HTTP.Client                 (Manager)
 import Servant                             (Handler)
 
-getChangeData ∷
-    Manager →
-    String → String → Metric →
-    Maybe Integer → Maybe Integer →
-    Handler ChangeData
-getChangeData mgr marketName currencyPair metricName fromTime toTime = do
-  now <- liftIO getPOSIXMilliseconds
-  let weekAgo = now - 7 * 24 * 60 * 60 * 1000
-  change <- liftIO $ getChange
-        mgr
-        marketName
-        currencyPair
-        metricName
-        (fromMilliseconds $ fromMaybe weekAgo fromTime)
-        (fromMilliseconds $ fromMaybe now toTime)
-  return $ Data.Vector.head change
-
 getChange ∷
-    Manager →
-    String → String → Metric →
-    UTCTime → UTCTime →
-    IO (Vector ChangeData)
-getChange mgr marketName currencyPair metricName fromTime toTime = do
-  query qparams $ formatQuery
-    ("SELECT \
-      \ 100 - (first(" % key % ") / last(" % key % ")) * 100 AS " % key % "\
-      \ FROM " % key % "\
-      \ WHERE time > " % time % " AND time < " % time % "\
-      \ AND " % key % " = " % field % "\
-      \ AND " % key % " = " % field)
-    metricField metricField metricLabel
-    measurementName
-    fromTime toTime
-    marketField (FieldString $ toLower $ pack marketName)
-    currencyPairField (FieldString $ toUpper $ pack currencyPair)
-    where
-      qparams = queryParams db
-        & manager .~ Right mgr
-        & precision .~ Millisecond
-      db = "gluttony"
-      measurementName = "ticker"
-      metricField = Key $ toLower $ pack $ show metricName
-      metricLabel = Key "value"
-      marketField = "market"
-      currencyPairField = "currencyPair"
+  Manager →
+  String → String → Metric →
+  Maybe Integer → Maybe Integer →
+  Handler Change
+getChange mgr marketName currencyPair metricName fromTime toTime =
+  liftIO $ getWeekLimitedRange (fromTime, toTime)
+    >>= \(from, to) -> getData from to
+    >>= \ChangeData {value = change} ->
+          return Change { from = utcTimeToPOSIXSeconds from
+                        , to   = utcTimeToPOSIXSeconds to
+                        , ..
+                        }
+  where
+    getData = getChangeData mgr marketName currencyPair metricName
+
+getChangeData ∷
+  Manager →
+  String → String → Metric →
+  UTCTime → UTCTime →
+  IO ChangeData
+getChangeData mgr marketName currencyPair metricName fromTime toTime = do
+  query params sql >>= return . unwrapData
+  where
+    params = queryParams db
+      & manager .~ Right mgr
+      & precision .~ Millisecond
+    sql = formatQuery
+      ("SELECT \
+       \ 100 - (first(" % key % ") / last(" % key % ")) * 100 AS " % key % "\
+       \ FROM " % key % "\
+       \ WHERE time >= " % time % " AND time <= " % time % "\
+       \ AND " % key % " = " % field % "\
+       \ AND " % key % " = " % field)
+      metricField metricField metricLabel
+      measurementName
+      fromTime toTime
+      marketField (FieldString $ toLower $ pack marketName)
+      currencyPairField (FieldString $ toUpper $ pack currencyPair)
+    db = "gluttony"
+    measurementName = "ticker"
+    metricField = Key $ toLower $ pack $ show metricName
+    metricLabel = Key "value"
+    marketField = "market"
+    currencyPairField = "currencyPair"
+
+unwrapData ∷ Vector ChangeData → ChangeData
+unwrapData vector
+  | Data.Vector.null vector = ChangeData 0
+  | otherwise               = Data.Vector.head vector

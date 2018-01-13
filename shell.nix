@@ -3,11 +3,16 @@
 }:
 pkgs.stdenv.mkDerivation {
   name = "mammoth-shell";
-  buildInputs = with pkgs; [
-    influxdb
-    stack
-    #haskellPackages.ghc-mod
-    cabal2nix
-  ];
-  # ++ (import ./default.nix { inherit pkgs compiler; }).all;
+  buildInputs = let
+    tools = with pkgs; [
+      influxdb
+      stack
+      cabal2nix
+    ];
+    haskellTools = with pkgs.haskellPackages; [
+      stylish-haskell
+      #ghc-mod
+    ];
+    app = (import ./default.nix { inherit pkgs compiler; }).all;
+  in tools ++ haskellTools;
 }

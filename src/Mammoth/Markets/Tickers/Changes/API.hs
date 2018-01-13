@@ -7,6 +7,7 @@
 
 module Mammoth.Markets.Tickers.Changes.API
   ( ChangesApi
+  , Change(..)
   , ChangeData(..)
   )
 where
@@ -27,16 +28,15 @@ import Database.InfluxDB
   ( Field (FieldFloat)
   , QueryResults (parseResults)
   , getField
-  , parsePOSIXTime
   , parseQueryField
   , parseResultsWith
   )
 import GHC.Generics                    (Generic)
-import Mammoth.Markets.Tickers.Metrics (Metric)
+import Mammoth.Markets.Tickers.Metrics (Metric (Last))
 import Servant                         ((:>), Capture, Get, JSON, QueryParam)
 
 type ChangesApi
-  =  "markets"
+  = "markets"
   :> Capture "marketName" String
   :> "tickers"
   :> "changes"
@@ -44,22 +44,38 @@ type ChangesApi
   :> Capture "metric" Metric
   :> QueryParam "from" Integer
   :> QueryParam "to" Integer
-  :> Get '[JSON] ChangeData
+  :> Get '[JSON] Change
 
-data ChangeData = ChangeData {
-  timestamp :: POSIXTime,
-  value     :: Double
-} deriving (Eq, Show, Generic)
+data Change = Change
+  { marketName   :: String
+  , currencyPair :: String
+  , metricName   :: Metric
+  , from         :: POSIXTime
+  , to           :: POSIXTime
+  , change       :: Double
+  } deriving (Eq, Show, Generic)
+
+instance ToJSON Change
+instance FromJSON Change
+instance ToSchema Change where
+    declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
+        & mapped.schema.description ?~ "Ticker data percent change for a period of time"
+        & mapped.schema.example ?~ toJSON (Change
+                                           "bitfinex"
+                                           "BTC-USD"
+                                           Last
+                                           1513769217384
+                                           1513769299999
+                                           95)
+
+data ChangeData = ChangeData
+  { value :: Double } deriving (Eq, Show, Generic)
 
 instance ToJSON ChangeData
 instance FromJSON ChangeData
-instance ToSchema ChangeData where
-    declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
-        & mapped.schema.description ?~ "Ticker data percent change for a period of time"
-        & mapped.schema.example ?~ toJSON (ChangeData 1513901024000 95)
 
 instance QueryResults ChangeData where
-    parseResults prec' = parseResultsWith $ \_ _ columns fields -> do
-      timestamp <- getField "time" columns fields >>= parsePOSIXTime prec'
-      FieldFloat value <- getField "value" columns fields >>= parseQueryField
-      return ChangeData{..}
+    parseResults _ = parseResultsWith
+      $ \_ _ columns fields -> do getField "value" columns fields
+        >>= parseQueryField
+        >>= \(FieldFloat value) -> do return ChangeData{..}
