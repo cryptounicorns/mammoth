@@ -15,7 +15,7 @@ where
 import Control.Lens        ((&), (.~), (?~))
 import Data.Swagger        (Swagger, description, info, title, version)
 import Mammoth.Markets.API (MarketsApi)
-import Servant             ((:<|>), (:>), Capture, Proxy (Proxy))
+import Servant             ((:<|>), (:>), Proxy (Proxy))
 import Servant.Swagger     (toSwagger)
 import Servant.Swagger.UI  (SwaggerSchemaUI)
 

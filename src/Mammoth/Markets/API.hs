@@ -6,5 +6,6 @@
 module Mammoth.Markets.API (MarketsApi) where
 
 import Mammoth.Markets.Tickers.API (TickersApi)
+import Servant                     ((:>))
 
-type MarketsApi = TickersApi
+type MarketsApi = "markets" :> TickersApi

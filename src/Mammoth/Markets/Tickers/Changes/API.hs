@@ -36,8 +36,7 @@ import Mammoth.Markets.Tickers.Metrics (Metric (Last))
 import Servant                         ((:>), Capture, Get, JSON, QueryParam)
 
 type ChangesApi
-  = "markets"
-  :> Capture "marketName" String
+  = Capture "marketName" String
   :> "tickers"
   :> "changes"
   :> Capture "currencyPair" String
@@ -57,6 +56,7 @@ data Change = Change
 
 instance ToJSON Change
 instance FromJSON Change
+
 instance ToSchema Change where
     declareNamedSchema proxy = genericDeclareNamedSchema defaultSchemaOptions proxy
         & mapped.schema.description ?~ "Ticker data percent change for a period of time"
@@ -76,6 +76,6 @@ instance FromJSON ChangeData
 
 instance QueryResults ChangeData where
     parseResults _ = parseResultsWith
-      $ \_ _ columns fields -> do getField "value" columns fields
+      $ \_ _ columns fields → do getField "value" columns fields
         >>= parseQueryField
-        >>= \(FieldFloat value) -> do return ChangeData{..}
+        >>= \(FieldFloat value) → do return ChangeData{..}

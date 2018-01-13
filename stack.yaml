@@ -2,4 +2,6 @@ resolver: lts-9.12
 packages:
   - '.'
 extra-deps:
+  # XXX: The fuck https://github.com/commercialhaskell/stack/issues/3766
   - influxdb-1.2.2
+  - strings-1.1

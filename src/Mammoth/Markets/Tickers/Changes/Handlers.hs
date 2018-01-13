@@ -35,8 +35,8 @@ getChange ∷
   Handler Change
 getChange mgr marketName currencyPair metricName fromTime toTime =
   liftIO $ getWeekLimitedRange (fromTime, toTime)
-    >>= \(from, to) -> getData from to
-    >>= \ChangeData {value = change} ->
+    >>= \(from, to) → getData from to
+    >>= \ChangeData {value = change} →
           return Change { from = utcTimeToPOSIXSeconds from
                         , to   = utcTimeToPOSIXSeconds to
                         , ..

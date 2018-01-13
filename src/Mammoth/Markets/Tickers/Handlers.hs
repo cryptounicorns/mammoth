@@ -3,7 +3,7 @@
 {-# LANGUAGE UnicodeSyntax     #-}
 
 module Mammoth.Markets.Tickers.Handlers
-  ( getTickerData
+  ( getTicker
   , getChange
   )
 where
@@ -14,7 +14,7 @@ import Data.Int                                 (Int64)
 import Data.Maybe                               (fromMaybe)
 import Data.Text                                (pack, toLower, toUpper)
 import Data.Time.Clock                          (UTCTime)
-import Data.Time.Clock.POSIX               (utcTimeToPOSIXSeconds)
+import Data.Time.Clock.POSIX                    (utcTimeToPOSIXSeconds)
 import Data.Vector                              (Vector)
 import Database.InfluxDB
   ( Field (FieldString)
@@ -29,37 +29,38 @@ import Database.InfluxDB
   )
 import Database.InfluxDB.Format                 (field, key, string, time)
 import Database.InfluxDB.Types                  (Key (Key))
-import Mammoth.Markets.Tickers.API              (TickerData (..), TickerPoint (..))
+import Mammoth.Markets.Tickers.API              (Ticker (..), TickerData (..))
 import Mammoth.Markets.Tickers.Changes.Handlers (getChange)
 import Mammoth.Markets.Tickers.Metrics          (Metric)
 import Mammoth.Time                             (getWeekLimitedRange)
 import Network.HTTP.Client                      (Manager)
 import Servant                                  (Handler)
 
-getTickerData ∷
+getTicker ∷
   Manager →
   String → String → Metric →
   Maybe Integer → Maybe Integer → Maybe String →
-  Handler TickerData
-getTickerData mgr marketName currencyPair metricName fromTime toTime resolution = do
+  Handler Ticker
+getTicker mgr marketName currencyPair metricName fromTime toTime duration = do
   liftIO $ getWeekLimitedRange (fromTime, toTime)
-    >>= \(from, to) -> fmap fromPoint <$> getData from to (fromMaybe "1h" resolution)
-    >>= \points -> return TickerData { from = utcTimeToPOSIXSeconds from
-                                     , to   = utcTimeToPOSIXSeconds to
-                                     , ..
-                                     }
+    >>= \(from, to) → fmap fromPoint <$> getData from to resolution
+    >>= \points → return Ticker { from = utcTimeToPOSIXSeconds from
+                                , to   = utcTimeToPOSIXSeconds to
+                                , ..
+                                }
   where
-    getData = getTickerPoints mgr marketName currencyPair metricName
+    resolution = fromMaybe "1h" duration
+    getData    = getTickerData mgr marketName currencyPair metricName
 
-fromPoint ∷ TickerPoint → (Int64, Double)
+fromPoint ∷ TickerData → (Int64, Double)
 fromPoint point = (scaleTo Millisecond $ timestamp point, value point)
 
-getTickerPoints ∷
+getTickerData ∷
   Manager →
   String → String → Metric →
   UTCTime → UTCTime → String →
-  IO (Vector TickerPoint)
-getTickerPoints mgr marketName currencyPair metricName fromTime toTime resolution = do
+  IO (Vector TickerData)
+getTickerData mgr marketName currencyPair metricName fromTime toTime resolution = do
   query qparams $ formatQuery
     ("SELECT MEAN(" % key % ") AS " % key % " FROM " % key % "\
       \ WHERE time >= " % time % " AND time <= " % time % "\
