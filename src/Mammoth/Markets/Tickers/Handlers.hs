@@ -41,13 +41,13 @@ getTicker ∷
   String → String → Metric →
   Maybe Integer → Maybe Integer → Maybe String →
   Handler Ticker
-getTicker mgr marketName currencyPair metricName fromTime toTime duration = do
-  liftIO $ getWeekLimitedRange (fromTime, toTime)
-    >>= \(from, to) → fmap fromPoint <$> getData from to resolution
-    >>= \points → return Ticker { from = utcTimeToPOSIXSeconds from
-                                , to   = utcTimeToPOSIXSeconds to
-                                , ..
-                                }
+getTicker mgr marketName currencyPair metricName fromTime toTime duration = liftIO $ do
+  (from, to) <- getWeekLimitedRange (fromTime, toTime)
+  points <- fmap fromPoint <$> getData from to resolution
+  return Ticker { from = utcTimeToPOSIXSeconds from
+                , to   = utcTimeToPOSIXSeconds to
+                , ..
+                }
   where
     resolution = fromMaybe "1h" duration
     getData    = getTickerData mgr marketName currencyPair metricName
