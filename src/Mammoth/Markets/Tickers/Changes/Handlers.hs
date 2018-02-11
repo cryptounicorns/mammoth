@@ -49,6 +49,8 @@ getChangeData ∷
   UTCTime → UTCTime →
   IO ChangeData
 getChangeData mgr marketName currencyPair metricName fromTime toTime = do
+  -- FIXME: Could query return non-list type?
+  -- Maybe there is something to retrieve just one record?
   query params sql >>= return . unwrapData
   where
     params = queryParams db

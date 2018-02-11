@@ -33,17 +33,24 @@ import Database.InfluxDB
   )
 import GHC.Generics                    (Generic)
 import Mammoth.Markets.Tickers.Metrics (Metric (Last))
-import Servant                         ((:>), Capture, Get, JSON, QueryParam)
+import Servant
+  ( (:>)
+  , Get
+  , JSON
+  , QueryParam
+  , QueryParam'
+  , Required
+  )
 
 type ChangesApi
-  = Capture "marketName" String
-  :> "tickers"
+  = "tickers"
   :> "changes"
-  :> Capture "currencyPair" String
-  :> Capture "metric" Metric
-  :> QueryParam "from" Integer
-  :> QueryParam "to" Integer
-  :> Get '[JSON] Change
+  :> QueryParam' '[Required] "marketName"   String
+  :> QueryParam' '[Required] "currencyPair" String
+  :> QueryParam' '[Required] "metric"       Metric
+  :> QueryParam              "from"         Integer
+  :> QueryParam              "to"           Integer
+  :> Get         '[JSON]                    Change
 
 data Change = Change
   { marketName   :: String
