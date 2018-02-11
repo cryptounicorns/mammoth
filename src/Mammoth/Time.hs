@@ -7,8 +7,16 @@ module Mammoth.Time
   , fromMilliseconds
   , resolveRange
   ) where
-import           Data.Time.Clock       (UTCTime)
-import           Data.Time.Clock.POSIX (getPOSIXTime, posixSecondsToUTCTime)
+--import Data.Aeson            (FromJSON, ToJSON)
+import Data.Time.Clock       (UTCTime)
+--import Data.Time.Clock.POSIX (POSIXTime)
+import Data.Time.Clock.POSIX (getPOSIXTime, posixSecondsToUTCTime)
+--import GHC.Generics          (Generic)
+
+--data POSIXMillisTime = POSIXTime deriving (Generic)
+
+--instance ToJSON POSIXMillisTime
+--instance FromJSON POSIXMillisTime
 
 getPOSIXMilliseconds ∷ IO Integer
 getPOSIXMilliseconds = round <$> (* 1000) <$> getPOSIXTime

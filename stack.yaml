@@ -1,7 +1,13 @@
-resolver: lts-9.12
-packages:
-  - '.'
+# We need nightly and allow-newer because of this https://github.com/haskell-servant/servant/pull/873
+# To build a most fresh environment for the moment
+resolver: nightly-2018-02-11
+allow-newer: true
 extra-deps:
-  # XXX: The fuck https://github.com/commercialhaskell/stack/issues/3766
+  # Commit which supports servant-0.13
+  - git: "https://github.com/haskell-servant/servant-swagger.git"
+    commit: "9035149013562428926db7c105da762b06b80c93"
+  - servant-0.13
   - influxdb-1.2.2
   - strings-1.1
+packages:
+  - '.'

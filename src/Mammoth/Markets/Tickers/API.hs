@@ -41,21 +41,22 @@ import Mammoth.Markets.Tickers.Metrics     (Metric (Last))
 import Servant
   ( (:<|>)
   , (:>)
-  , Capture
   , Get
   , JSON
   , QueryParam
+  , QueryParam'
+  , Required
   )
 
 type TickersApi
-   = Capture "marketName" String
-   :> "tickers"
-   :> Capture    "currencyPair" String
-   :> Capture    "metric"       Metric
-   :> QueryParam "from"         Integer
-   :> QueryParam "to"           Integer
-   :> QueryParam "resolution"   String
-   :> Get        '[JSON]        Ticker
+   = "tickers"
+   :> QueryParam' '[Required] "marketName"   String
+   :> QueryParam' '[Required] "currencyPair" String
+   :> QueryParam' '[Required] "metric"       Metric
+   :> QueryParam              "from"         Integer
+   :> QueryParam              "to"           Integer
+   :> QueryParam              "resolution"   String
+   :> Get         '[JSON]                    Ticker
    :<|> ChangesApi
 
 data Ticker = Ticker
