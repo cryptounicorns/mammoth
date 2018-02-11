@@ -3,21 +3,20 @@
         "rw": [
             ["~/projects/cache", "~"],
             ["~/.emacs.d",       "~/.emacs.d"],
-            [".",                "."]
+            "."
         ],
         "ro": [
-            ["~/.bashrc",        "~/.bashrc"],
-            ["~/.profile",       "~/.profile"],
-            ["~/.config/fish",   "~/.config/fish"],
-            ["~/.config/xonsh",  "~/.config/xonsh"],
-            ["~/.xonshrc",       "~/.xonshrc"],
-            ["~/.gitconfig",     "~/.gitconfig"],
-            ["~/.ghci",          "~/.ghci"]
+            "~/projects/src/github.com/corpix/go-boilerplate",
+            "~/.bashrc",
+            "~/.profile",
+            "~/.config/fish",
+            "~/.gitconfig"
         ]
     },
     "environment": {
         "PATH":     "$HOME/.local/bin:$HOME/projects/bin:$PATH",
         "NIX_PATH": "$NIX_PATH",
+        "GOPATH":   "$HOME/projects",
         "TERM":     "screen-256color"
     }
 }

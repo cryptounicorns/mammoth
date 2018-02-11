@@ -1,0 +1,14 @@
+version: "2"
+services:
+  mammoth:
+    image: mammoth
+    build: .
+    volumes:
+      - ./build/mammoth:/usr/bin/mammoth:ro
+      - ./config.json:/etc/mammoth/config.json:ro
+    command: >-
+      /usr/bin/mammoth
+      --config /etc/mammoth/config.json
+      --debug
+    ports: []
+    links: []
