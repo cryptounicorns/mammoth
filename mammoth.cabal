@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 353c97d5ef5fca3bddbbd7a8a7b2c2ee2dafa8031589b4e84063613d61c56495
+-- hash: e986078d2168fd5be101d4ea0b48fb006b0b1c737ed41479fbf6e50d59c44555
 
 name:           mammoth
 version:        0.0.0
@@ -25,6 +25,7 @@ library
     , servant-server
     , servant-swagger
     , servant-swagger-ui
+    , strings
     , swagger2
     , text
     , time
@@ -37,9 +38,16 @@ library
       App
       Mammoth.API
       Mammoth.Markets
+      Mammoth.Markets.API
+      Mammoth.Markets.Server
       Mammoth.Markets.Tickers.API
+      Mammoth.Markets.Tickers.Changes.API
+      Mammoth.Markets.Tickers.Changes.Handlers
       Mammoth.Markets.Tickers.Handlers
+      Mammoth.Markets.Tickers.Metrics
+      Mammoth.Markets.Tickers.Server
       Mammoth.Server
+      Mammoth.Time
   other-modules:
       Paths_mammoth
   default-language: Haskell2010
@@ -60,6 +68,7 @@ executable mammoth
     , servant-server
     , servant-swagger
     , servant-swagger-ui
+    , strings
     , swagger2
     , text
     , time

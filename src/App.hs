@@ -22,12 +22,21 @@ import           Database.InfluxDB
 import           GHC.Generics                         (Generic)
 import           Mammoth.API                          (apiWithDocs)
 import qualified Mammoth.Server
-import           Network.HTTP.Client                  (Manager, defaultManagerSettings, newManager)
+import           Network.HTTP.Client
+  ( Manager
+  , defaultManagerSettings
+  , newManager
+  )
 import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant                              (serve)
-import           System.Envy                          (DefConfig, FromEnv, decode, defConfig)
+import           System.Envy
+  ( DefConfig
+  , FromEnv
+  , decode
+  , defConfig
+  )
 import           System.IO
 
 data Config = Config {
