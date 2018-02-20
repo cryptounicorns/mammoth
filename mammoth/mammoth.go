@@ -8,3 +8,4 @@ import (
 
 func init() { runtime.GOMAXPROCS(runtime.NumCPU()) }
 func main() { cli.Execute() }
+

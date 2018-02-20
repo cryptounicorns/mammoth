@@ -1,6 +1,122 @@
 {
-    "Logger": {
-        "Level": "info",
-        "Formatter": "json"
+  "HTTP": {
+    "Addr": "0.0.0.0:8080"
+  },
+  "Logger": {
+    "Formatter": "json",
+    "Level": "info"
+  },
+  "Router": [
+    {
+      "Description": {
+        "Short": "Produces time grouped means on specified ticker metric.\n"
+      },
+      "Handler": {
+        "Database": {
+          "Influxdb": {
+            "Client": {
+              "Addr": "http://127.0.0.1:8086"
+            },
+            "Database": "gluttony",
+            "Precision": "nanosecond",
+            "Query": "select mean($metric)\nfrom tickers\nwhere\n  time >= $from\n  and time <= $to\n  and market = $market\n  and currencyPair = $currencyPair\ngroup by time($resolution)\n"
+          },
+          "Type": "influxdb"
+        },
+        "Format": "json",
+        "Parameters": [
+          {
+            "Name": "metric",
+            "Type": "string"
+          },
+          {
+            "Name": "from",
+            "Type": "float64"
+          },
+          {
+            "Name": "to",
+            "Type": "float64"
+          },
+          {
+            "Name": "market",
+            "Type": "string"
+          },
+          {
+            "Name": "currencyPair",
+            "Type": "string"
+          },
+          {
+            "Name": "resolution",
+            "Type": "string"
+          }
+        ],
+        "Transformer": {
+          "Lua": {
+            "Code": "local time = require(\"gotime\")\n\nfunction transform(v)\n  --local err\n  --v[\"resolution\"], err = time.ParseDuration(v[\"resolution\"])\n  --return v, err\n  return v, nil\nend\n",
+            "FunctionName": "transform"
+          },
+          "Type": "lua"
+        },
+        "Validator": {
+          "Lua": {
+            "Code": "local math      = require(\"gomath\")\nlocal time      = require(\"gotime\")\nlocal validator = require(\"govalidator\")\n\nfunction validate(p)\n  if not validator.IsIn(p[\"metric\"], \"last\", \"high\", \"low\")      then return \"metric is not valid\" end\n  if math.Abs(p[\"from\"] - p[\"to\"]) > (time.Hour * 24 * 7)        then return \"from & to represents too wide timerange\" end\n  if not validator.IsAlphanumeric(p[\"market\"])                   then return \"market should be alphanumeric\" end\n  if not validator.Matches(p[\"currencyPair\"], \"^[A-Z]+-[A-Z]+$\") then return \"currencyPair is invalid\" end\n\n  local resolution\nlocal err\n\nresolution, err = time.ParseDuration(p[\"resolution\"])\n\nif err                    then return \"invalid resolution syntax\" end\nif resolution < time.Hour then return \"resolution should be greater or equal 1 hour\" end\n\n\n  return nil\nend\n",
+            "FunctionName": "validate"
+          },
+          "Type": "lua"
+        }
+      },
+      "Method": "get",
+      "Path": "/api/v1/tickers"
+    },
+    {
+      "Description": {
+        "Short": "Calculates percent change of the metric.\n"
+      },
+      "Handler": {
+        "Database": {
+          "Influxdb": {
+            "Client": {
+              "Addr": "http://127.0.0.1:8086"
+            },
+            "Database": "gluttony",
+            "Precision": "nanosecond",
+            "Query": "select\n  100 - (first($metric) / last($metric)) * 100 as $metric\nfrom tickers\nwhere\n  time >= $from\n  and time <= $to\n  and market = $market\n  and currencyPair = $currencyPair\n"
+          },
+          "Type": "influxdb"
+        },
+        "Format": "json",
+        "Parameters": [
+          {
+            "Name": "metric",
+            "Type": "string"
+          },
+          {
+            "Name": "from",
+            "Type": "float64"
+          },
+          {
+            "Name": "to",
+            "Type": "float64"
+          },
+          {
+            "Name": "market",
+            "Type": "string"
+          },
+          {
+            "Name": "currencyPair",
+            "Type": "string"
+          }
+        ],
+        "Validator": {
+          "Lua": {
+            "Code": "local math      = require(\"gomath\")\nlocal time      = require(\"gotime\")\nlocal validator = require(\"govalidator\")\n\nfunction validate(p)\n  if not validator.IsIn(p[\"metric\"], \"last\", \"high\", \"low\")      then return \"metric is not valid\" end\n  if math.Abs(p[\"from\"] - p[\"to\"]) > (time.Hour * 24 * 7)        then return \"from & to represents too wide timerange\" end\n  if not validator.IsAlphanumeric(p[\"market\"])                   then return \"market should be alphanumeric\" end\n  if not validator.Matches(p[\"currencyPair\"], \"^[A-Z]+-[A-Z]+$\") then return \"currencyPair is invalid\" end\n\n  \n\n  return nil\nend\n",
+            "FunctionName": "validate"
+          },
+          "Type": "lua"
+        }
+      },
+      "Method": "get",
+      "Path": "/api/v1/changes"
     }
+  ]
 }

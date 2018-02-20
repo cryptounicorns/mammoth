@@ -9,7 +9,9 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/imdario/mergo"
 
+	"github.com/cryptounicorns/mammoth/http"
 	"github.com/cryptounicorns/mammoth/logger"
+	"github.com/cryptounicorns/mammoth/router"
 )
 
 var (
@@ -25,6 +27,8 @@ var (
 // Config represents application configuration structure.
 type Config struct {
 	Logger logger.Config `validate:"required"`
+	HTTP   http.Config   `validate:"required"`
+	Router router.Config `validate:"required"`
 }
 
 // FromReader returns parsed config data in some `f` from reader `r`.

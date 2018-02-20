@@ -4,6 +4,9 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
+
+	"github.com/cryptounicorns/mammoth/http"
+	"github.com/cryptounicorns/mammoth/router"
 )
 
 var (
@@ -27,8 +30,28 @@ var (
 
 // RootAction is executing when program called without any subcommand.
 func RootAction(c *cli.Context) error {
+	var (
+		rr  *router.Router
+		s   *http.Server
+		err error
+	)
+
+	rr, err = router.FromConfig(Config.Router, log)
+	if err != nil {
+		return err
+	}
+
 	for {
-		log.Print("hello")
+		s = http.New(
+			Config.HTTP,
+			rr.Mux,
+			log,
+		)
+
+		err = s.Serve()
+		if err != nil {
+			log.Error(err)
+		}
 		time.Sleep(1 * time.Second)
 	}
 }

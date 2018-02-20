@@ -1,0 +1,5 @@
+package: github.com/corpix/errcomposer
+import:
+- package: github.com/davecgh/go-spew
+  subpackages:
+  - spew

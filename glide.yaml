@@ -1,12 +1,29 @@
 package: github.com/cryptounicorns/mammoth
 import:
+- package: github.com/asaskevich/govalidator
+- package: github.com/corpix/errcomposer
 - package: github.com/corpix/formats
 - package: github.com/corpix/loggers
   subpackages:
   - logger/logrus
+  - logger/prefixwrapper
+- package: github.com/corpix/lua
+  subpackages:
+  - mapper
+  - pool
+- package: github.com/corpix/reflect
 - package: github.com/davecgh/go-spew
   subpackages:
   - spew
 - package: github.com/go-playground/validator
+- package: github.com/gorilla/mux
 - package: github.com/imdario/mergo
+- package: github.com/influxdata/influxdb
+  subpackages:
+  - client/v2
+- package: github.com/savaki/swag
+  subpackages:
+  - endpoint
+  - swagger
 - package: github.com/urfave/cli
+- package: github.com/yuin/gopher-lua
