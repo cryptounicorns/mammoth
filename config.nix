@@ -3,7 +3,8 @@
 #   1519397252459093504 - 1519397252459093536
 # = -32 ns
 # This is because of lua internal representation of numbers,
-# it is float64, but for nanoseconds we need uint64
+# it is float64, but for nanoseconds we need uint64,
+# floats may be inexact, so we lost our 32 ns.
 # I don't have clear idea about a fix ATM
 
 {
