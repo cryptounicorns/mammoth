@@ -1,26 +1,28 @@
-hash: 1c291eebb3efc21683a4ff9f480ae4af4003c9cfec2207c6d5c4929a840f5b40
-updated: 2018-02-20T04:04:11.780237232Z
+hash: c1f462cab67f7e06c8035e9f5fe24e1687012a28748be658c43ff01f45d9f8b9
+updated: 2018-02-24T03:19:57.181556254Z
 imports:
 - name: github.com/asaskevich/govalidator
   version: 4b3d68f87f176641ffc147420296013aff66ea32
 - name: github.com/corpix/errcomposer
   version: c014294efae0938dcd62e8e92bff858947eeaab0
 - name: github.com/corpix/formats
-  version: 9a60a2b6efca3a5264cfbece220df11e8a2813f6
+  version: 44ae7d799273aeda646d30844a33cb803990ef3d
 - name: github.com/corpix/loggers
-  version: 69c4a7d3244f0509086d4080e8898376aeb95e09
+  version: 6428ebad5a5ef7a300d5dc269a99978de598aace
   subpackages:
   - logger/logrus
   - logger/prefixwrapper
 - name: github.com/corpix/lua
-  version: 5e74da89183dcb218d234721bf706702de363d65
+  version: 69f0827608ebeb93aca7b35d5583eb3dce15fba1
   subpackages:
   - mapper
   - pool
 - name: github.com/corpix/reflect
-  version: 6ed20ec0fc290b86ccd48569a25610fb42768716
+  version: 762e8fbf1f83a7e3e4ee34b7732a776b478ffc3f
+- name: github.com/corpix/template
+  version: b9d46b1ed40a9fb8c42063205026387862a96970
 - name: github.com/davecgh/go-spew
-  version: 87df7c60d5820d0f8ae11afede5aa52325c09717
+  version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
   - spew
 - name: github.com/go-playground/locales
@@ -30,7 +32,7 @@ imports:
 - name: github.com/go-playground/universal-translator
   version: 71201497bace774495daed26a3874fd339e0b538
 - name: github.com/go-playground/validator
-  version: 535f85221eb67ab842438877b22cac6274380cf2
+  version: 150fe5b6a4ccc9cd6ffdbf5d184b67fbea75efcc
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
@@ -38,7 +40,7 @@ imports:
 - name: github.com/imdario/mergo
   version: 0d4b488675fdec1dde48751b05ab530cf0b630e1
 - name: github.com/influxdata/influxdb
-  version: 6d008c3453668d7ea64bd5265c0fb915964215eb
+  version: 89a88d218e3a79bdaa35e45a53b0a5fe6a5f3bd0
   subpackages:
   - client/v2
   - models
@@ -57,7 +59,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: 8c0189d9f6bbf301e5d055d34268156b317016af
 - name: github.com/urfave/cli
-  version: a1c7408de3f632d86eee604a3bb755f1ffb68226
+  version: 446f49e78f79a164079a99a88446182703331c75
 - name: github.com/yuin/gopher-lua
   version: 7d7bc8747e3f614c5c587729a341fe7d8903cdb8
   subpackages:
@@ -73,5 +75,5 @@ imports:
   subpackages:
   - unix
 - name: gopkg.in/yaml.v2
-  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+  version: 7f97868eec74b32b0982dd158a51a446d1da7eb5
 testImports: []

@@ -59,10 +59,6 @@ func FromConfig(c Config, l loggers.Logger) (Route, error) {
 		err error
 	)
 
-	// FIXME: handler should be closed
-	// We should have a separate constructor where handler could be injected
-	// so we could manage this resource outside of the route
-	// (otherwise we will need to add Close() to route which is mess)
 	h, err = handler.FromConfig(c.Handler, l)
 	if err != nil {
 		return Route{}, err

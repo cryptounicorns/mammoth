@@ -1,3 +1,11 @@
+# FIXME: Time in nanoseconds will be truncated little bit
+#
+#   1519397252459093504 - 1519397252459093536
+# = -32 ns
+# This is because of lua internal representation of numbers,
+# it is float64, but for nanoseconds we need uint64
+# I don't have clear idea about a fix ATM
+
 {
   Logger = {
     Formatter = "json";
@@ -12,8 +20,8 @@
       tickersParameters = extra:
         [
           { Name = "metric";       Type  = "string";  }
-          { Name = "from";         Type  = "float64"; }
-          { Name = "to";           Type  = "float64"; }
+          { Name = "from";         Type  = "int64"; }
+          { Name = "to";           Type  = "int64"; }
           { Name = "market";       Type  = "string";  }
           { Name = "currencyPair"; Type  = "string";  }
         ] ++ extra;
@@ -29,14 +37,34 @@
                 local validator = require("govalidator")
 
                 function validate(p)
-                  if not validator.IsIn(p["metric"], "last", "high", "low")      then return "metric is not valid" end
-                  if math.Abs(p["from"] - p["to"]) > (time.Hour * 24 * 7)        then return "from & to represents too wide timerange" end
-                  if not validator.IsAlphanumeric(p["market"])                   then return "market should be alphanumeric" end
-                  if not validator.Matches(p["currencyPair"], "^[A-Z]+-[A-Z]+$") then return "currencyPair is invalid" end
+                  if string.len(p["market"]) == 0                                      then return "market should not be empty" end
+                  if not validator.IsIn(p["metric"], "last", "high", "low")            then return "metric is not valid" end
+                  if math.Abs(p["from"] - p["to"]) > (time.Hour * 24 * 7)              then return "from and to fields represents too wide timerange" end
+                  if not validator.IsAlphanumeric(p["market"])                         then return "market should be alphanumeric" end
+                  if not validator.Matches(p["currencyPair"], "^[A-Za-z]+-[A-Za-z]+$") then return "currencyPair is invalid" end
 
                   ${extra}
 
                   return nil
+                end
+              '';
+          };
+        };
+      tickersTransformer = extra:
+        {
+          Type = "lua";
+          Lua = {
+            FunctionName = "transform";
+            Code =
+              ''
+                local strings = require("gostrings")
+
+                function transform(p)
+                  p["currencyPair"] = strings.ToUpper(p["currencyPair"])
+
+                  ${extra}
+
+                  return p
                 end
               '';
           };
@@ -52,7 +80,6 @@
         };
 
         Handler = {
-          Format = "json";
           Parameters = tickersParameters
             [
               {
@@ -72,6 +99,8 @@
               if resolution < time.Hour then return "resolution should be greater or equal 1 hour" end
             '';
 
+          Transformer = tickersTransformer "";
+
           Database = {
             Type = "influxdb";
             Influxdb = {
@@ -81,15 +110,25 @@
               };
               Precision = "nanosecond";
               Query = ''
-                select mean($metric)
-                from tickers
+                select mean({{ .Escape .Parameters.metric }})
+                  as {{ .Escape .Parameters.metric }}
+                from ticker
                 where
-                  time >= $from
-                  and time <= $to
-                  and market = $market
-                  and currencyPair = $currencyPair
-                group by time($resolution)
+                  time >= {{ printf "%.0f" .Parameters.from }}
+                  and time <= {{ printf "%.0f" .Parameters.to }}
+                  and market = '{{ .Escape .Parameters.market }}'
+                  and currencyPair = '{{ .Escape .Parameters.currencyPair }}'
+                group by time({{ .Escape .Parameters.resolution }})
               '';
+            };
+          };
+          Response = {
+            Format = "json";
+            Builder = {
+              Type = "columns";
+              Columns = {
+                Database = "influxdb";
+              };
             };
           };
         };
@@ -104,9 +143,9 @@
         };
 
         Handler = {
-          Format = "json";
           Parameters = tickersParameters [];
           Validator = tickersValidator "";
+          Transformer = tickersTransformer "";
 
           Database = {
             Type = "influxdb";
@@ -118,14 +157,24 @@
               Precision = "nanosecond";
               Query = ''
                 select
-                  100 - (first($metric) / last($metric)) * 100 as $metric
-                from tickers
+                  100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100
+                    as {{ .Escape .Parameters.metric }}
+                from ticker
                 where
-                  time >= $from
-                  and time <= $to
-                  and market = $market
-                  and currencyPair = $currencyPair
+                  time >= {{ printf "%.0f" .Parameters.from }}
+                  and time <= {{ printf "%.0f" .Parameters.to }}
+                  and market = '{{ .Escape .Parameters.market }}'
+                  and currencyPair = '{{ .Escape .Parameters.currencyPair }}'
               '';
+            };
+          };
+          Response = {
+            Format = "json";
+            Builder = {
+              Type = "columns";
+              Columns = {
+                Database = "influxdb";
+              };
             };
           };
         };

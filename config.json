@@ -19,11 +19,10 @@
             },
             "Database": "gluttony",
             "Precision": "nanosecond",
-            "Query": "select mean($metric)\nfrom tickers\nwhere\n  time >= $from\n  and time <= $to\n  and market = $market\n  and currencyPair = $currencyPair\ngroup by time($resolution)\n"
+            "Query": "select mean({{ .Escape .Parameters.metric }})\n  as {{ .Escape .Parameters.metric }}\nfrom ticker\nwhere\n  time >= {{ printf \"%.0f\" .Parameters.from }}\n  and time <= {{ printf \"%.0f\" .Parameters.to }}\n  and market = '{{ .Escape .Parameters.market }}'\n  and currencyPair = '{{ .Escape .Parameters.currencyPair }}'\ngroup by time({{ .Escape .Parameters.resolution }})\n"
           },
           "Type": "influxdb"
         },
-        "Format": "json",
         "Parameters": [
           {
             "Name": "metric",
@@ -31,11 +30,11 @@
           },
           {
             "Name": "from",
-            "Type": "float64"
+            "Type": "int64"
           },
           {
             "Name": "to",
-            "Type": "float64"
+            "Type": "int64"
           },
           {
             "Name": "market",
@@ -50,16 +49,25 @@
             "Type": "string"
           }
         ],
+        "Response": {
+          "Builder": {
+            "Columns": {
+              "Database": "influxdb"
+            },
+            "Type": "columns"
+          },
+          "Format": "json"
+        },
         "Transformer": {
           "Lua": {
-            "Code": "local time = require(\"gotime\")\n\nfunction transform(v)\n  --local err\n  --v[\"resolution\"], err = time.ParseDuration(v[\"resolution\"])\n  --return v, err\n  return v, nil\nend\n",
+            "Code": "local strings = require(\"gostrings\")\n\nfunction transform(p)\n  p[\"currencyPair\"] = strings.ToUpper(p[\"currencyPair\"])\n\n  \n\n  return p\nend\n",
             "FunctionName": "transform"
           },
           "Type": "lua"
         },
         "Validator": {
           "Lua": {
-            "Code": "local math      = require(\"gomath\")\nlocal time      = require(\"gotime\")\nlocal validator = require(\"govalidator\")\n\nfunction validate(p)\n  if not validator.IsIn(p[\"metric\"], \"last\", \"high\", \"low\")      then return \"metric is not valid\" end\n  if math.Abs(p[\"from\"] - p[\"to\"]) > (time.Hour * 24 * 7)        then return \"from & to represents too wide timerange\" end\n  if not validator.IsAlphanumeric(p[\"market\"])                   then return \"market should be alphanumeric\" end\n  if not validator.Matches(p[\"currencyPair\"], \"^[A-Z]+-[A-Z]+$\") then return \"currencyPair is invalid\" end\n\n  local resolution\nlocal err\n\nresolution, err = time.ParseDuration(p[\"resolution\"])\n\nif err                    then return \"invalid resolution syntax\" end\nif resolution < time.Hour then return \"resolution should be greater or equal 1 hour\" end\n\n\n  return nil\nend\n",
+            "Code": "local math      = require(\"gomath\")\nlocal time      = require(\"gotime\")\nlocal validator = require(\"govalidator\")\n\nfunction validate(p)\n  if string.len(p[\"market\"]) == 0                                      then return \"market should not be empty\" end\n  if not validator.IsIn(p[\"metric\"], \"last\", \"high\", \"low\")            then return \"metric is not valid\" end\n  if math.Abs(p[\"from\"] - p[\"to\"]) > (time.Hour * 24 * 7)              then return \"from and to fields represents too wide timerange\" end\n  if not validator.IsAlphanumeric(p[\"market\"])                         then return \"market should be alphanumeric\" end\n  if not validator.Matches(p[\"currencyPair\"], \"^[A-Za-z]+-[A-Za-z]+$\") then return \"currencyPair is invalid\" end\n\n  local resolution\nlocal err\n\nresolution, err = time.ParseDuration(p[\"resolution\"])\n\nif err                    then return \"invalid resolution syntax\" end\nif resolution < time.Hour then return \"resolution should be greater or equal 1 hour\" end\n\n\n  return nil\nend\n",
             "FunctionName": "validate"
           },
           "Type": "lua"
@@ -80,11 +88,10 @@
             },
             "Database": "gluttony",
             "Precision": "nanosecond",
-            "Query": "select\n  100 - (first($metric) / last($metric)) * 100 as $metric\nfrom tickers\nwhere\n  time >= $from\n  and time <= $to\n  and market = $market\n  and currencyPair = $currencyPair\n"
+            "Query": "select\n  100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100\n    as {{ .Escape .Parameters.metric }}\nfrom ticker\nwhere\n  time >= {{ printf \"%.0f\" .Parameters.from }}\n  and time <= {{ printf \"%.0f\" .Parameters.to }}\n  and market = '{{ .Escape .Parameters.market }}'\n  and currencyPair = '{{ .Escape .Parameters.currencyPair }}'\n"
           },
           "Type": "influxdb"
         },
-        "Format": "json",
         "Parameters": [
           {
             "Name": "metric",
@@ -92,11 +99,11 @@
           },
           {
             "Name": "from",
-            "Type": "float64"
+            "Type": "int64"
           },
           {
             "Name": "to",
-            "Type": "float64"
+            "Type": "int64"
           },
           {
             "Name": "market",
@@ -107,9 +114,25 @@
             "Type": "string"
           }
         ],
+        "Response": {
+          "Builder": {
+            "Columns": {
+              "Database": "influxdb"
+            },
+            "Type": "columns"
+          },
+          "Format": "json"
+        },
+        "Transformer": {
+          "Lua": {
+            "Code": "local strings = require(\"gostrings\")\n\nfunction transform(p)\n  p[\"currencyPair\"] = strings.ToUpper(p[\"currencyPair\"])\n\n  \n\n  return p\nend\n",
+            "FunctionName": "transform"
+          },
+          "Type": "lua"
+        },
         "Validator": {
           "Lua": {
-            "Code": "local math      = require(\"gomath\")\nlocal time      = require(\"gotime\")\nlocal validator = require(\"govalidator\")\n\nfunction validate(p)\n  if not validator.IsIn(p[\"metric\"], \"last\", \"high\", \"low\")      then return \"metric is not valid\" end\n  if math.Abs(p[\"from\"] - p[\"to\"]) > (time.Hour * 24 * 7)        then return \"from & to represents too wide timerange\" end\n  if not validator.IsAlphanumeric(p[\"market\"])                   then return \"market should be alphanumeric\" end\n  if not validator.Matches(p[\"currencyPair\"], \"^[A-Z]+-[A-Z]+$\") then return \"currencyPair is invalid\" end\n\n  \n\n  return nil\nend\n",
+            "Code": "local math      = require(\"gomath\")\nlocal time      = require(\"gotime\")\nlocal validator = require(\"govalidator\")\n\nfunction validate(p)\n  if string.len(p[\"market\"]) == 0                                      then return \"market should not be empty\" end\n  if not validator.IsIn(p[\"metric\"], \"last\", \"high\", \"low\")            then return \"metric is not valid\" end\n  if math.Abs(p[\"from\"] - p[\"to\"]) > (time.Hour * 24 * 7)              then return \"from and to fields represents too wide timerange\" end\n  if not validator.IsAlphanumeric(p[\"market\"])                         then return \"market should be alphanumeric\" end\n  if not validator.Matches(p[\"currencyPair\"], \"^[A-Za-z]+-[A-Za-z]+$\") then return \"currencyPair is invalid\" end\n\n  \n\n  return nil\nend\n",
             "FunctionName": "validate"
           },
           "Type": "lua"

@@ -6,9 +6,7 @@ import (
 	"github.com/corpix/lua/pool"
 	lua "github.com/yuin/gopher-lua"
 
-	luamath "github.com/cryptounicorns/mammoth/lua/math"
-	luaspew "github.com/cryptounicorns/mammoth/lua/spew"
-	luatime "github.com/cryptounicorns/mammoth/lua/time"
+	luabinding "github.com/cryptounicorns/mammoth/lua"
 	"github.com/cryptounicorns/mammoth/transformers/errors"
 )
 
@@ -25,9 +23,7 @@ func newVM(c Config, l loggers.Logger) func() *lua.LState {
 			err error
 		)
 
-		l.PreloadModule("gospew", luaspew.Loader)
-		l.PreloadModule("gomath", luamath.Loader)
-		l.PreloadModule("gotime", luatime.Loader)
+		luabinding.Bind(l)
 
 		err = l.DoString(c.Code)
 		if err != nil {

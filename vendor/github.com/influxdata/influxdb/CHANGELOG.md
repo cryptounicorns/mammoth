@@ -22,6 +22,8 @@ v1.5.0 [unreleased]
 -	[#9056](https://github.com/influxdata/influxdb/pull/9056): Add logging configuration to the main configuration file.
 -	[#9445](https://github.com/influxdata/influxdb/pull/9445): Suppress the InfluxDB banner if the log output is not a TTY.
 -	[#9449](https://github.com/influxdata/influxdb/pull/9449): Added option to write HTTP request logs to separate file.
+-	[#9454](https://github.com/influxdata/influxdb/pull/9454): Update logging calls to take advantage of structured logging.
+-	[#9456](https://github.com/influxdata/influxdb/pull/9456): Generate trace logs for a number of important InfluxDB operations.
 
 ### Bugfixes
 
@@ -48,6 +50,8 @@ v1.5.0 [unreleased]
 -	[#8878](https://github.com/influxdata/influxdb/pull/8878): Do not report an error when dropping a CQ on a non-existent DB/RP.
 -	[#9423](https://github.com/influxdata/influxdb/pull/9423): Fix imports of multiple databases in a single import file from `influx -import`.
 -	[#9443](https://github.com/influxdata/influxdb/pull/9443): Fix regression when math between literals is used in a field.
+-	[#9464](https://github.com/influxdata/influxdb/pull/9464): Re-open last WAL segment.
+-	[#9470](https://github.com/influxdata/influxdb/pull/9470): Make closing TSM cursors idempotent.
 
 v1.4.3 [unreleased]
 -------------------

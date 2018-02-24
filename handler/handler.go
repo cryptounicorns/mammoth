@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/corpix/errcomposer"
-	"github.com/corpix/formats"
 	"github.com/corpix/loggers"
 	"github.com/corpix/loggers/logger/prefixwrapper"
 	"github.com/corpix/reflect"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/cryptounicorns/mammoth/databases"
 	"github.com/cryptounicorns/mammoth/parameters"
+	"github.com/cryptounicorns/mammoth/response"
 	"github.com/cryptounicorns/mammoth/transformers"
 	transformersErrors "github.com/cryptounicorns/mammoth/transformers/errors"
 	"github.com/cryptounicorns/mammoth/validators"
@@ -25,7 +25,7 @@ type Handler struct {
 	transformer        transformers.Transformer
 	databaseConnection databases.Connection
 	database           databases.Database
-	format             formats.Format
+	response           *response.Response
 	config             Config
 	log                loggers.Logger
 }
@@ -38,16 +38,13 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			map[string]interface{},
 			len(h.Parameters),
 		)
-		c   string
-		q   []string
-		buf []byte
-		v   interface{}
+		c string
+		q []string
+		v interface{}
 
 		ok  bool
 		err error
 	)
-
-	rw.Header().Set("content-type", "application/"+h.format.Name())
 
 	for _, p := range h.Parameters {
 		c, ok = capture[p.Name]
@@ -98,26 +95,17 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf, err = h.format.Marshal(v)
+	err = h.response.Write(v, rw, r)
 	if err != nil {
 		h.handleError(err, rw)
 		return
 	}
-
-	rw.WriteHeader(http.StatusOK)
-	rw.Write(buf)
-}
-
-func (h Handler) Close() error {
-	return h.databaseConnection.Close()
 }
 
 func (h Handler) handleError(err error, rw http.ResponseWriter) {
 	var (
-		statusCode       int
-		statusText       string
-		statusFormatText []byte
-		innerErr         error
+		statusCode int
+		statusText string
 	)
 
 	switch e := err.(type) {
@@ -142,13 +130,8 @@ func (h Handler) handleError(err error, rw http.ResponseWriter) {
 		statusText = http.StatusText(statusCode)
 	}
 
-	statusFormatText, innerErr = h.format.Marshal(statusText)
-	if innerErr != nil {
-		h.log.Error(err)
-	}
-
 	rw.WriteHeader(statusCode)
-	rw.Write(statusFormatText)
+	rw.Write([]byte(statusText))
 }
 
 func FromConfig(c Config, l loggers.Logger) (Handler, error) {
@@ -159,7 +142,7 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		tr  transformers.Transformer
 		dbc databases.Connection
 		db  databases.Database
-		f   formats.Format
+		r   *response.Response
 		err error
 	)
 
@@ -190,7 +173,7 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		return Handler{}, err
 	}
 
-	f, err = formats.New(c.Format)
+	r, err = response.FromConfig(c.Response, log)
 	if err != nil {
 		return Handler{}, err
 	}
@@ -201,13 +184,13 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		transformer:        tr,
 		databaseConnection: dbc,
 		database:           db,
-		format:             f,
+		response:           r,
 		config:             c,
 		log:                log,
 	}, nil
 }
 
-func MustFromConfig(ps parameters.Parameters, c Config, l loggers.Logger) Handler {
+func MustFromConfig(c Config, l loggers.Logger) Handler {
 	var (
 		h   Handler
 		err error
