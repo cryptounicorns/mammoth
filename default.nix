@@ -7,7 +7,7 @@ buildGo19Package rec {
 
   buildInputs = with pkgs; [ git glide ];
 
-  chackTarget = "test";
+  checkTarget = "test";
 
   src = ./.;
   goPackagePath = "github.com/cryptounicorns/mammoth";
