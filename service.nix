@@ -6,7 +6,7 @@ let
   name = "mammoth";
   cfg = config.services."${name}";
   pkg = (pkgs.callPackage ./default.nix { });
-  in {
+in {
   options = with types; {
     services."${name}" = {
       enable = mkEnableOption "Mammoth HTTP interface for time-series data";
@@ -22,6 +22,12 @@ let
         type = string;
         description = ''
           Group name to run service from.
+        '';
+      };
+      configuration = mkOption {
+        default = {};
+        description = ''
+          Application configuration.
         '';
       };
     };
@@ -50,7 +56,7 @@ let
         Type = "simple";
         User = name;
         Group = name;
-        ExecStart = "${pkg}/bin/${name}";
+        ExecStart = "${pkg}/bin/${name} -c ${pkgs.writeText "config.json" (builtins.toJSON cfg.configuration)}";
         Restart = "on-failure";
         RestartSec = 1;
       };
