@@ -113,7 +113,7 @@
               Query = ''
                 select mean({{ .Escape .Parameters.metric }})
                   as {{ .Escape .Parameters.metric }}
-                from ticker
+                from tickers
                 where
                   time >= {{ printf "%.0f" .Parameters.from }}
                   and time <= {{ printf "%.0f" .Parameters.to }}
@@ -160,7 +160,7 @@
                 select
                   100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100
                     as {{ .Escape .Parameters.metric }}
-                from ticker
+                from tickers
                 where
                   time >= {{ printf "%.0f" .Parameters.from }}
                   and time <= {{ printf "%.0f" .Parameters.to }}

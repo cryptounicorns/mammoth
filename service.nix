@@ -24,6 +24,12 @@ in {
           Group name to run service from.
         '';
       };
+      domain = mkOption {
+        type = str;
+        description = ''
+          Domain which should be used for this service.
+        '';
+      };
       configuration = mkOption {
         default = {};
         description = ''
@@ -60,6 +66,26 @@ in {
         Restart = "on-failure";
         RestartSec = 1;
       };
+    };
+
+    services.nginx = {
+      upstreams = {
+        mammoth = {
+          servers = {
+            "${cfg.configuration.HTTP.Addr}" = { backup = false; };
+          };
+        };
+      };
+
+      virtualHosts."${cfg.domain}".extraConfig = let
+        proxy = path: ''
+          location ${path} {
+            proxy_pass       http://mammoth;
+            proxy_set_header X-Forwarded-For $remote_addr;
+          }
+        '';
+        paths = configuration: map (route: route.Path) configuration.Router;
+      in mkAfter (concatStringsSep "\n" (map proxy (paths cfg.configuration)));
     };
   };
 }
