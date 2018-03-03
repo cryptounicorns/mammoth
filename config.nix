@@ -21,10 +21,10 @@
       tickersParameters = extra:
         [
           { Name = "metric";       Type  = "string";  }
-          { Name = "from";         Type  = "int64"; }
-          { Name = "to";           Type  = "int64"; }
+          { Name = "from";         Type  = "int64";   }
+          { Name = "to";           Type  = "int64";   }
           { Name = "market";       Type  = "string";  }
-          { Name = "currencyPair"; Type  = "string";  }
+          { Name = "symbolPair";   Type  = "string";  }
         ] ++ extra;
       tickersValidator = extra:
         {
@@ -42,7 +42,7 @@
                   if not validator.IsIn(p["metric"], "last", "high", "low")            then return "metric is not valid" end
                   if math.Abs(p["from"] - p["to"]) > (time.Hour * 24 * 7)              then return "from and to fields represents too wide timerange" end
                   if not validator.IsAlphanumeric(p["market"])                         then return "market should be alphanumeric" end
-                  if not validator.Matches(p["currencyPair"], "^[A-Za-z]+-[A-Za-z]+$") then return "currencyPair is invalid" end
+                  if not validator.Matches(p["symbolPair"], "^[A-Za-z]+-[A-Za-z]+$") then return "symbolPair is invalid" end
 
                   ${extra}
 
@@ -61,7 +61,7 @@
                 local strings = require("gostrings")
 
                 function transform(p)
-                  p["currencyPair"] = strings.ToUpper(p["currencyPair"])
+                  p["symbolPair"] = strings.ToUpper(p["symbolPair"])
 
                   ${extra}
 
@@ -118,7 +118,7 @@
                   time >= {{ printf "%.0f" .Parameters.from }}
                   and time <= {{ printf "%.0f" .Parameters.to }}
                   and market = '{{ .Escape .Parameters.market }}'
-                  and currencyPair = '{{ .Escape .Parameters.currencyPair }}'
+                  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
                 group by time({{ .Escape .Parameters.resolution }})
               '';
             };
@@ -165,7 +165,7 @@
                   time >= {{ printf "%.0f" .Parameters.from }}
                   and time <= {{ printf "%.0f" .Parameters.to }}
                   and market = '{{ .Escape .Parameters.market }}'
-                  and currencyPair = '{{ .Escape .Parameters.currencyPair }}'
+                  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
               '';
             };
           };
