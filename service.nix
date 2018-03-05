@@ -54,9 +54,8 @@ in {
     systemd.services."${name}" = {
       enable = true;
 
-      wants    = [ "influxdb.service" ];
       wantedBy = [ "multi-user.target" ];
-      after    = [ "network.target" ];
+      after    = [ "influxdb.service" "network.target" ];
 
       serviceConfig = {
         Type = "simple";
