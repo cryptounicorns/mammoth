@@ -17,6 +17,21 @@ type Router struct {
 	log    loggers.Logger
 }
 
+func (rr Router) Close() error {
+	var (
+		err error
+	)
+
+	for _, r := range rr.routes {
+		err = r.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func FromRoutes(rs []route.Route, l loggers.Logger) (*Router, error) {
 	var (
 		rr = mux.NewRouter()

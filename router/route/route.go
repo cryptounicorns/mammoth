@@ -53,6 +53,10 @@ func (r Route) Endpoint() *swagger.Endpoint {
 	)
 }
 
+func (r Route) Close() error {
+	return r.Handler.Close()
+}
+
 func FromConfig(c Config, l loggers.Logger) (Route, error) {
 	var (
 		h   handler.Handler

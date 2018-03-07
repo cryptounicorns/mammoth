@@ -12,6 +12,7 @@ import (
 
 type Validator interface {
 	Validate(interface{}) error
+	Close() error
 }
 
 func FromConfig(c Config, l loggers.Logger) (Validator, error) {

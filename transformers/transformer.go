@@ -12,6 +12,7 @@ import (
 
 type Transformer interface {
 	Transform(interface{}) (interface{}, error)
+	Close() error
 }
 
 func FromConfig(c Config, l loggers.Logger) (Transformer, error) {

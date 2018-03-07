@@ -133,6 +133,10 @@ func (h Handler) handleError(err error, rw http.ResponseWriter) {
 	rw.Write([]byte(statusText))
 }
 
+func (h Handler) Close() error {
+	return h.database.Close()
+}
+
 func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 	var (
 		log = prefixwrapper.New("Handler: ", l)

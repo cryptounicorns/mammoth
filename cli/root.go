@@ -40,6 +40,7 @@ func RootAction(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	defer rr.Close()
 
 	for {
 		s = http.New(
