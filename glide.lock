@@ -1,5 +1,5 @@
 hash: cd0662158b899a270282436d78fd29050209ef5854910289de0aa1c12bd0eed2
-updated: 2018-03-07T09:04:59.811933889Z
+updated: 2018-03-07T10:01:29.499262609Z
 imports:
 - name: github.com/asaskevich/govalidator
   version: 4b3d68f87f176641ffc147420296013aff66ea32
@@ -22,7 +22,7 @@ imports:
 - name: github.com/corpix/template
   version: b9d46b1ed40a9fb8c42063205026387862a96970
 - name: github.com/cryptounicorns/tsdbs
-  version: 7114c7aed602d2b987cde90113089b4933518a62
+  version: fe7ca0ee29361af6951a83df034ecaeccdd68530
   subpackages:
   - database/influxdb
 - name: github.com/davecgh/go-spew

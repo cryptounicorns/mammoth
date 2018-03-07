@@ -20,14 +20,13 @@ import (
 )
 
 type Handler struct {
-	Parameters         parameters.Parameters
-	validator          validators.Validator
-	transformer        transformers.Transformer
-	databaseConnection tsdbs.Connection
-	database           tsdbs.Database
-	response           *response.Response
-	config             Config
-	log                loggers.Logger
+	Parameters  parameters.Parameters
+	validator   validators.Validator
+	transformer transformers.Transformer
+	database    tsdbs.Database
+	response    *response.Response
+	config      Config
+	log         loggers.Logger
 }
 
 func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
@@ -140,7 +139,6 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		ps  parameters.Parameters
 		vr  validators.Validator
 		tr  transformers.Transformer
-		dbc tsdbs.Connection
 		db  tsdbs.Database
 		r   *response.Response
 		err error
@@ -163,12 +161,7 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		}
 	}
 
-	dbc, err = tsdbs.Connect(c.Database.Config, log)
-	if err != nil {
-		return Handler{}, err
-	}
-
-	db, err = tsdbs.FromConfig(c.Database.Config, dbc, log)
+	db, err = tsdbs.FromConfig(c.Database.Config, log)
 	if err != nil {
 		return Handler{}, err
 	}
@@ -179,14 +172,13 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 	}
 
 	return Handler{
-		Parameters:         ps,
-		validator:          vr,
-		transformer:        tr,
-		databaseConnection: dbc,
-		database:           db,
-		response:           r,
-		config:             c,
-		log:                log,
+		Parameters:  ps,
+		validator:   vr,
+		transformer: tr,
+		database:    db,
+		response:    r,
+		config:      c,
+		log:         log,
 	}, nil
 }
 
