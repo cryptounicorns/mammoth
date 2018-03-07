@@ -79,8 +79,9 @@ in {
       virtualHosts."${cfg.domain}".extraConfig = let
         proxy = path: ''
           location ${path} {
-            proxy_pass       http://mammoth;
-            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_pass         http://mammoth;
+            proxy_set_header   X-Forwarded-For $remote_addr;
+            proxy_http_version 1.1;
           }
         '';
         paths = configuration: map (route: route.Path) configuration.Router;
