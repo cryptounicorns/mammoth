@@ -1,0 +1,16 @@
+hash: 4de189b062db68da083a46c959a4759b09781beeaaf3b432b466d49a8a86264f
+updated: 2018-03-07T05:47:14.041469423Z
+imports:
+- name: github.com/corpix/loggers
+  version: 6428ebad5a5ef7a300d5dc269a99978de598aace
+  subpackages:
+  - logger/prefixwrapper
+- name: github.com/corpix/template
+  version: b9d46b1ed40a9fb8c42063205026387862a96970
+- name: github.com/influxdata/influxdb
+  version: 6ac835404e7e64ea7299a6eebcce1ab1ef15fe3c
+  subpackages:
+  - client/v2
+  - models
+  - pkg/escape
+testImports: []

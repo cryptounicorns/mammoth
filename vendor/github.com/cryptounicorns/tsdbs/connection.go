@@ -1,4 +1,4 @@
-package databases
+package tsdbs
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/corpix/loggers"
 	"github.com/corpix/loggers/logger/prefixwrapper"
 
-	"github.com/cryptounicorns/mammoth/databases/database/influxdb"
+	"github.com/cryptounicorns/tsdbs/database/influxdb"
 )
 
 type Connection = io.Closer

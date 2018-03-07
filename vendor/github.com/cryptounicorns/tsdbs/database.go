@@ -1,4 +1,4 @@
-package databases
+package tsdbs
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/corpix/loggers/logger/prefixwrapper"
 	client "github.com/influxdata/influxdb/client/v2"
 
-	"github.com/cryptounicorns/mammoth/databases/database/influxdb"
+	"github.com/cryptounicorns/tsdbs/database/influxdb"
 )
 
 type Database interface {

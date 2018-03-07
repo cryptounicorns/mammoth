@@ -12,7 +12,7 @@ import:
   - mapper
   - pool
 - package: github.com/corpix/reflect
-- package: github.com/corpix/template
+- package: github.com/cryptounicorns/tsdbs
 - package: github.com/davecgh/go-spew
   subpackages:
   - spew

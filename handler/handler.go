@@ -10,7 +10,7 @@ import (
 	"github.com/corpix/reflect"
 	"github.com/gorilla/mux"
 
-	"github.com/cryptounicorns/mammoth/databases"
+	"github.com/cryptounicorns/tsdbs"
 	"github.com/cryptounicorns/mammoth/parameters"
 	"github.com/cryptounicorns/mammoth/response"
 	"github.com/cryptounicorns/mammoth/transformers"
@@ -23,8 +23,8 @@ type Handler struct {
 	Parameters         parameters.Parameters
 	validator          validators.Validator
 	transformer        transformers.Transformer
-	databaseConnection databases.Connection
-	database           databases.Database
+	databaseConnection tsdbs.Connection
+	database           tsdbs.Database
 	response           *response.Response
 	config             Config
 	log                loggers.Logger
@@ -140,8 +140,8 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		ps  parameters.Parameters
 		vr  validators.Validator
 		tr  transformers.Transformer
-		dbc databases.Connection
-		db  databases.Database
+		dbc tsdbs.Connection
+		db  tsdbs.Database
 		r   *response.Response
 		err error
 	)
@@ -163,12 +163,12 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		}
 	}
 
-	dbc, err = databases.Connect(c.Database, log)
+	dbc, err = tsdbs.Connect(c.Database, log)
 	if err != nil {
 		return Handler{}, err
 	}
 
-	db, err = databases.FromConfig(c.Database, dbc, log)
+	db, err = tsdbs.FromConfig(c.Database, dbc, log)
 	if err != nil {
 		return Handler{}, err
 	}

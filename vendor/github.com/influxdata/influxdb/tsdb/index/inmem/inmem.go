@@ -772,7 +772,7 @@ func (i *Index) DropSeriesGlobal(key []byte, ts int64) error {
 }
 
 // TagSets returns a list of tag sets.
-func (i *Index) TagSets(shardID uint64, name []byte, opt query.IteratorOptions) ([]*query.TagSet, error) {
+func (i *Index) TagSets(shardSeriesIDs *tsdb.SeriesIDSet, name []byte, opt query.IteratorOptions) ([]*query.TagSet, error) {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 
@@ -781,7 +781,7 @@ func (i *Index) TagSets(shardID uint64, name []byte, opt query.IteratorOptions) 
 		return nil, nil
 	}
 
-	tagSets, err := mm.TagSets(shardID, opt)
+	tagSets, err := mm.TagSets(shardSeriesIDs, opt)
 	if err != nil {
 		return nil, err
 	}
@@ -1155,9 +1155,9 @@ func (idx *ShardIndex) SeriesN() int64 {
 }
 
 // InitializeSeries is called during start-up.
-// This works the same as CreateSeriesIfNotExists except it ignore limit errors.
-func (idx *ShardIndex) InitializeSeries(key, name []byte, tags models.Tags) error {
-	return idx.Index.CreateSeriesListIfNotExists(idx.id, idx.seriesIDSet, [][]byte{key}, [][]byte{name}, []models.Tags{tags}, &idx.opt, true)
+// This works the same as CreateSeriesListIfNotExists except it ignore limit errors.
+func (idx *ShardIndex) InitializeSeries(keys, names [][]byte, tags []models.Tags) error {
+	return idx.Index.CreateSeriesListIfNotExists(idx.id, idx.seriesIDSet, keys, names, tags, &idx.opt, true)
 }
 
 // CreateSeriesIfNotExists creates the provided series on the index if it is not
@@ -1168,7 +1168,7 @@ func (idx *ShardIndex) CreateSeriesIfNotExists(key, name []byte, tags models.Tag
 
 // TagSets returns a list of tag sets based on series filtering.
 func (idx *ShardIndex) TagSets(name []byte, opt query.IteratorOptions) ([]*query.TagSet, error) {
-	return idx.Index.TagSets(idx.id, name, opt)
+	return idx.Index.TagSets(idx.seriesIDSet, name, opt)
 }
 
 // SeriesIDSet returns the bitset associated with the series ids.

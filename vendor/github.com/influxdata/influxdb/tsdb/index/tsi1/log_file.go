@@ -91,7 +91,7 @@ func (f *LogFile) open() error {
 	f.id, _ = ParseFilename(f.path)
 
 	// Open file for appending.
-	file, err := os.OpenFile(f.Path(), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	file, err := os.OpenFile(f.Path(), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
@@ -120,12 +120,7 @@ func (f *LogFile) open() error {
 	for buf := f.data; len(buf) > 0; {
 		// Read next entry. Truncate partial writes.
 		var e LogEntry
-		if err := e.UnmarshalBinary(buf); err == io.ErrShortBuffer {
-			if err := file.Truncate(n); err != nil {
-				return err
-			} else if _, err := file.Seek(0, io.SeekEnd); err != nil {
-				return err
-			}
+		if err := e.UnmarshalBinary(buf); err == io.ErrShortBuffer || err == ErrLogEntryChecksumMismatch {
 			break
 		} else if err != nil {
 			return err
@@ -137,6 +132,12 @@ func (f *LogFile) open() error {
 		// Move buffer forward.
 		n += int64(e.Size)
 		buf = buf[e.Size:]
+	}
+
+	// Move to the end of the file.
+	f.size = n
+	if _, err := file.Seek(n, io.SeekStart); err != nil {
+		return err
 	}
 
 	return nil
@@ -618,7 +619,14 @@ func (f *LogFile) execSeriesEntry(e *LogEntry) {
 		seriesKey = f.sfile.SeriesKey(e.SeriesID)
 	}
 
-	assert(seriesKey != nil, fmt.Sprintf("series key for ID: %d not found", e.SeriesID))
+	// Series keys can be removed if the series has been deleted from
+	// the entire database and the server is restarted. This would cause
+	// the log to replay its insert but the key cannot be found.
+	//
+	// https://github.com/influxdata/influxdb/issues/9444
+	if seriesKey == nil {
+		return
+	}
 
 	// Check if deleted.
 	deleted := e.Flag == LogEntrySeriesTombstoneFlag

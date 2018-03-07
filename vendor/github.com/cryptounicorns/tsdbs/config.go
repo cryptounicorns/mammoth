@@ -1,7 +1,7 @@
-package databases
+package tsdbs
 
 import (
-	"github.com/cryptounicorns/mammoth/databases/database/influxdb"
+	"github.com/cryptounicorns/tsdbs/database/influxdb"
 )
 
 type Config struct {

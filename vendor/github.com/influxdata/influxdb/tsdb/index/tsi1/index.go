@@ -3,6 +3,7 @@ package tsi1
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -178,7 +179,7 @@ func (i *Index) Open() error {
 		p := NewPartition(i.sfile, filepath.Join(i.path, fmt.Sprint(j)))
 		p.MaxLogFileSize = i.maxLogFileSize
 		p.Database = i.database
-		p.logger = i.logger.With(zap.String("index", "tsi"), zap.String("partition", fmt.Sprint(j+1)))
+		p.logger = i.logger.With(zap.String("tsi1_partition", fmt.Sprint(j+1)))
 		i.partitions[j] = p
 	}
 
@@ -554,7 +555,7 @@ func (i *Index) CreateSeriesIfNotExists(key, name []byte, tags models.Tags) erro
 }
 
 // InitializeSeries is a no-op. This only applies to the in-memory index.
-func (i *Index) InitializeSeries(key, name []byte, tags models.Tags) error {
+func (i *Index) InitializeSeries(keys, names [][]byte, tags []models.Tags) error {
 	return nil
 }
 
@@ -880,3 +881,21 @@ func (i *Index) SetFieldName(measurement []byte, name string) {}
 
 // Rebuild rebuilds an index. It's a no-op for this index.
 func (i *Index) Rebuild() {}
+
+// IsIndexDir returns true if directory contains at least one partition directory.
+func IsIndexDir(path string) (bool, error) {
+	fis, err := ioutil.ReadDir(path)
+	if err != nil {
+		return false, err
+	}
+	for _, fi := range fis {
+		if !fi.IsDir() {
+			continue
+		} else if ok, err := IsPartitionDir(filepath.Join(path, fi.Name())); err != nil {
+			return false, err
+		} else if ok {
+			return true, nil
+		}
+	}
+	return false, nil
+}

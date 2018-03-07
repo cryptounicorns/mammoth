@@ -1,5 +1,5 @@
-hash: c1f462cab67f7e06c8035e9f5fe24e1687012a28748be658c43ff01f45d9f8b9
-updated: 2018-02-24T03:19:57.181556254Z
+hash: cd0662158b899a270282436d78fd29050209ef5854910289de0aa1c12bd0eed2
+updated: 2018-03-07T06:10:03.131562695Z
 imports:
 - name: github.com/asaskevich/govalidator
   version: 4b3d68f87f176641ffc147420296013aff66ea32
@@ -21,6 +21,10 @@ imports:
   version: 762e8fbf1f83a7e3e4ee34b7732a776b478ffc3f
 - name: github.com/corpix/template
   version: b9d46b1ed40a9fb8c42063205026387862a96970
+- name: github.com/cryptounicorns/tsdbs
+  version: 682132393ca267520a7a78df2d030f5cd87deb43
+  subpackages:
+  - database/influxdb
 - name: github.com/davecgh/go-spew
   version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
@@ -32,15 +36,15 @@ imports:
 - name: github.com/go-playground/universal-translator
   version: 71201497bace774495daed26a3874fd339e0b538
 - name: github.com/go-playground/validator
-  version: 150fe5b6a4ccc9cd6ffdbf5d184b67fbea75efcc
+  version: 1b8c8e19cd250435025214492d9a08411d760fdd
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: c0091a029979286890368b4c7b301261e448e242
+  version: 07ba1fd60e210dc5cc6f86ec25dc9ecc7c95c295
 - name: github.com/imdario/mergo
   version: 0d4b488675fdec1dde48751b05ab530cf0b630e1
 - name: github.com/influxdata/influxdb
-  version: 89a88d218e3a79bdaa35e45a53b0a5fe6a5f3bd0
+  version: 6ac835404e7e64ea7299a6eebcce1ab1ef15fe3c
   subpackages:
   - client/v2
   - models
@@ -57,9 +61,9 @@ imports:
   - endpoint
   - swagger
 - name: github.com/sirupsen/logrus
-  version: 8c0189d9f6bbf301e5d055d34268156b317016af
+  version: f4ee69125072b22721efbe639bd0da9c9d19b8cc
 - name: github.com/urfave/cli
-  version: 446f49e78f79a164079a99a88446182703331c75
+  version: 8e01ec4cd3e2d84ab2fe90d8210528ffbb06d8ff
 - name: github.com/yuin/gopher-lua
   version: 7d7bc8747e3f614c5c587729a341fe7d8903cdb8
   subpackages:

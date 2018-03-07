@@ -1,4 +1,4 @@
-v1.5.0 [unreleased]
+v1.5.0 [2017-03-06]
 -------------------
 
 ### Breaking changes
@@ -24,6 +24,7 @@ v1.5.0 [unreleased]
 -	[#9449](https://github.com/influxdata/influxdb/pull/9449): Added option to write HTTP request logs to separate file.
 -	[#9454](https://github.com/influxdata/influxdb/pull/9454): Update logging calls to take advantage of structured logging.
 -	[#9456](https://github.com/influxdata/influxdb/pull/9456): Generate trace logs for a number of important InfluxDB operations.
+-	[#9488](https://github.com/influxdata/influxdb/pull/9488): Improve startup time of inmem index.
 
 ### Bugfixes
 
@@ -52,6 +53,12 @@ v1.5.0 [unreleased]
 -	[#9443](https://github.com/influxdata/influxdb/pull/9443): Fix regression when math between literals is used in a field.
 -	[#9464](https://github.com/influxdata/influxdb/pull/9464): Re-open last WAL segment.
 -	[#9470](https://github.com/influxdata/influxdb/pull/9470): Make closing TSM cursors idempotent.
+-	[#9489](https://github.com/influxdata/influxdb/pull/9489): Add dumptsi path error handling..
+-	[#9493](https://github.com/influxdata/influxdb/pull/9493): Fix the implicit time range in a subquery.
+-	[#9491](https://github.com/influxdata/influxdb/pull/9491): Evaluate a true boolean literal when calculating tag sets.
+-	[#9496](https://github.com/influxdata/influxdb/pull/9496): Fix panic on tsi1 log replay of deleted series..
+-	[#9510](https://github.com/influxdata/influxdb/pull/9510): Fix TSI log file recovery.
+-	[#9513](https://github.com/influxdata/influxdb/pull/9513): Fix missing Store.Close() unlock.
 
 v1.4.3 [unreleased]
 -------------------

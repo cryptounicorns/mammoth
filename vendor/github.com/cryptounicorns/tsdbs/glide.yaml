@@ -1,0 +1,9 @@
+package: github.com/cryptounicorns/tsdbs
+import:
+- package: github.com/corpix/loggers
+  subpackages:
+  - logger/prefixwrapper
+- package: github.com/corpix/template
+- package: github.com/influxdata/influxdb
+  subpackages:
+  - client/v2

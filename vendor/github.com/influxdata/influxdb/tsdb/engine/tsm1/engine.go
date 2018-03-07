@@ -725,34 +725,68 @@ func (e *Engine) LoadMetadataIndex(shardID uint64, index tsdb.Index) error {
 		return nil
 	}
 
+	keys := make([][]byte, 0, 10000)
+	fieldTypes := make([]influxql.DataType, 0, 10000)
+
 	if err := e.FileStore.WalkKeys(nil, func(key []byte, typ byte) error {
 		fieldType := BlockTypeToInfluxQLDataType(typ)
 		if fieldType == influxql.Unknown {
 			return fmt.Errorf("unknown block type: %v", typ)
 		}
 
-		if err := e.addToIndexFromKey(key, fieldType); err != nil {
-			return err
+		keys = append(keys, key)
+		fieldTypes = append(fieldTypes, fieldType)
+		if len(keys) == cap(keys) {
+			// Send batch of keys to the index.
+			if err := e.addToIndexFromKey(keys, fieldTypes); err != nil {
+				return err
+			}
+
+			// Reset buffers.
+			keys, fieldTypes = keys[:0], fieldTypes[:0]
 		}
+
 		return nil
 	}); err != nil {
 		return err
+	}
+
+	if len(keys) > 0 {
+		// Add remaining partial batch from FileStore.
+		if err := e.addToIndexFromKey(keys, fieldTypes); err != nil {
+			return err
+		}
+		keys, fieldTypes = keys[:0], fieldTypes[:0]
 	}
 
 	// load metadata from the Cache
 	if err := e.Cache.ApplyEntryFn(func(key []byte, entry *entry) error {
 		fieldType, err := entry.values.InfluxQLType()
 		if err != nil {
-			e.logger.Info("Error getting the data type of values for key",
-				zap.ByteString("key", key), zap.Error(err))
+			e.logger.Info("Error getting the data type of values for key", zap.ByteString("key", key), zap.Error(err))
 		}
 
-		if err := e.addToIndexFromKey(key, fieldType); err != nil {
-			return err
+		keys = append(keys, key)
+		fieldTypes = append(fieldTypes, fieldType)
+		if len(keys) == cap(keys) {
+			// Send batch of keys to the index.
+			if err := e.addToIndexFromKey(keys, fieldTypes); err != nil {
+				return err
+			}
+
+			// Reset buffers.
+			keys, fieldTypes = keys[:0], fieldTypes[:0]
 		}
 		return nil
 	}); err != nil {
 		return err
+	}
+
+	if len(keys) > 0 {
+		// Add remaining partial batch from FileStore.
+		if err := e.addToIndexFromKey(keys, fieldTypes); err != nil {
+			return err
+		}
 	}
 
 	// Save the field set index so we don't have to rebuild it next time
@@ -760,8 +794,7 @@ func (e *Engine) LoadMetadataIndex(shardID uint64, index tsdb.Index) error {
 		return err
 	}
 
-	e.traceLogger.Info("Meta data index for shard loaded",
-		zap.Uint64("id", shardID), zap.Duration("duration", time.Since(now)))
+	e.traceLogger.Info("Meta data index for shard loaded", zap.Uint64("id", shardID), zap.Duration("duration", time.Since(now)))
 	return nil
 }
 
@@ -1013,6 +1046,8 @@ func (e *Engine) overlay(r io.Reader, basePath string, asNew bool) error {
 
 	// Merge and dedup all the series keys across each reader to reduce
 	// lock contention on the index.
+	keys := make([][]byte, 0, 10000)
+	fieldTypes := make([]influxql.DataType, 0, 10000)
 	merged := merge(readers...)
 	for v := range merged {
 		fieldType := BlockTypeToInfluxQLDataType(v.typ)
@@ -1020,7 +1055,23 @@ func (e *Engine) overlay(r io.Reader, basePath string, asNew bool) error {
 			return fmt.Errorf("unknown block type: %v", v.typ)
 		}
 
-		if err := e.addToIndexFromKey(v.key, fieldType); err != nil {
+		keys = append(keys, v.key)
+		fieldTypes = append(fieldTypes, fieldType)
+
+		if len(keys) == cap(keys) {
+			// Send batch of keys to the index.
+			if err := e.addToIndexFromKey(keys, fieldTypes); err != nil {
+				return err
+			}
+
+			// Reset buffers.
+			keys, fieldTypes = keys[:0], fieldTypes[:0]
+		}
+	}
+
+	if len(keys) > 0 {
+		// Add remaining partial batch.
+		if err := e.addToIndexFromKey(keys, fieldTypes); err != nil {
 			return err
 		}
 	}
@@ -1086,25 +1137,34 @@ func (e *Engine) readFileFromBackup(tr *tar.Reader, shardRelativePath string, as
 	return tmp, nil
 }
 
-// addToIndexFromKey will pull the measurement name, series key, and field name from a composite key and add it to the
-// database index and measurement fields
-func (e *Engine) addToIndexFromKey(key []byte, fieldType influxql.DataType) error {
-	seriesKey, field := SeriesAndFieldFromCompositeKey(key)
-	name := tsdb.MeasurementFromSeriesKey(seriesKey)
+// addToIndexFromKey will pull the measurement names, series keys, and field
+// names from composite keys, and add them to the database index and measurement
+// fields.
+func (e *Engine) addToIndexFromKey(keys [][]byte, fieldTypes []influxql.DataType) error {
+	var field []byte
+	names := make([][]byte, 0, len(keys))
+	tags := make([]models.Tags, 0, len(keys))
 
-	mf := e.fieldset.CreateFieldsIfNotExists(name)
-	if err := mf.CreateFieldIfNotExists(field, fieldType); err != nil {
-		return err
+	for i := 0; i < len(keys); i++ {
+		// Replace tsm key format with index key format.
+		keys[i], field = SeriesAndFieldFromCompositeKey(keys[i])
+		name := tsdb.MeasurementFromSeriesKey(keys[i])
+		mf := e.fieldset.CreateFieldsIfNotExists(name)
+		if err := mf.CreateFieldIfNotExists(field, fieldTypes[i]); err != nil {
+			return err
+		}
+
+		names = append(names, name)
+		tags = append(tags, models.ParseTags(keys[i]))
 	}
 
-	tags := models.ParseTags(seriesKey)
 	// Build in-memory index, if necessary.
 	if e.index.Type() == inmem.IndexName {
-		if err := e.index.InitializeSeries(seriesKey, name, tags); err != nil {
+		if err := e.index.InitializeSeries(keys, names, tags); err != nil {
 			return err
 		}
 	} else {
-		if err := e.index.CreateSeriesIfNotExists(seriesKey, name, tags); err != nil {
+		if err := e.index.CreateSeriesListIfNotExists(keys, names, tags); err != nil {
 			return err
 		}
 	}
@@ -1561,11 +1621,11 @@ func (e *Engine) WriteSnapshot() error {
 
 	started := time.Now()
 
-	log, logEnd := logger.NewOperation(e.logger, "Cache snapshot", "cache.snapshot")
+	log, logEnd := logger.NewOperation(e.logger, "Cache snapshot", "tsm1_cache_snapshot")
 	defer func() {
 		elapsed := time.Since(started)
 		e.Cache.UpdateCompactTime(elapsed)
-		e.logger.Info("Snapshot for path written",
+		log.Info("Snapshot for path written",
 			zap.String("path", e.path),
 			zap.Duration("duration", elapsed))
 		logEnd()
@@ -1888,12 +1948,12 @@ func (s *compactionStrategy) Apply() {
 func (s *compactionStrategy) compactGroup() {
 	group := s.group
 	start := time.Now()
-	log, logEnd := logger.NewOperation(s.logger, "TSM compaction", "tsm1.compact_group")
+	log, logEnd := logger.NewOperation(s.logger, "TSM compaction", "tsm1_compact_group")
 	defer logEnd()
 
-	log.Info("Beginning compaction", zap.Int("files", len(group)))
+	log.Info("Beginning compaction", zap.Int("tsm1_files", len(group)))
 	for i, f := range group {
-		log.Info("Compacting file", zap.Int("index", i), zap.String("file", f))
+		log.Info("Compacting file", zap.Int("tsm1_index", i), zap.String("tsm1_file", f))
 	}
 
 	var (
@@ -1932,7 +1992,7 @@ func (s *compactionStrategy) compactGroup() {
 	}
 
 	for i, f := range files {
-		log.Info("Compacted file", zap.Int("index", i), zap.String("file", f))
+		log.Info("Compacted file", zap.Int("tsm1_index", i), zap.String("tsm1_file", f))
 	}
 	log.Info("Finished compacting files",
 		zap.Int("groups", len(group)),
@@ -1946,7 +2006,7 @@ func (s *compactionStrategy) compactGroup() {
 func (e *Engine) levelCompactionStrategy(group CompactionGroup, fast bool, level int) *compactionStrategy {
 	return &compactionStrategy{
 		group:     group,
-		logger:    e.logger.With(zap.Int("level", level), zap.String("strategy", "level")),
+		logger:    e.logger.With(zap.Int("tsm1_level", level), zap.String("tsm1_strategy", "level")),
 		fileStore: e.FileStore,
 		compactor: e.Compactor,
 		fast:      fast,
@@ -1965,7 +2025,7 @@ func (e *Engine) levelCompactionStrategy(group CompactionGroup, fast bool, level
 func (e *Engine) fullCompactionStrategy(group CompactionGroup, optimize bool) *compactionStrategy {
 	s := &compactionStrategy{
 		group:     group,
-		logger:    e.logger.With(zap.String("strategy", "full"), zap.Bool("optimize", optimize)),
+		logger:    e.logger.With(zap.String("tsm1_strategy", "full"), zap.Bool("tsm1_optimize", optimize)),
 		fileStore: e.FileStore,
 		compactor: e.Compactor,
 		fast:      optimize,
@@ -2109,6 +2169,10 @@ func (e *Engine) CreateIterator(ctx context.Context, measurement string, opt que
 	return newMergeFinalizerIterator(ctx, itrs, opt, e.logger)
 }
 
+type indexTagSets interface {
+	TagSets(name []byte, options query.IteratorOptions) ([]*query.TagSet, error)
+}
+
 func (e *Engine) createCallIterator(ctx context.Context, measurement string, call *influxql.Call, opt query.IteratorOptions) ([]query.Iterator, error) {
 	ref, _ := call.Args[0].(*influxql.VarRef)
 
@@ -2119,8 +2183,18 @@ func (e *Engine) createCallIterator(ctx context.Context, measurement string, cal
 	}
 
 	// Determine tagsets for this measurement based on dimensions and filters.
-	indexSet := tsdb.IndexSet{Indexes: []tsdb.Index{e.index}, SeriesFile: e.sfile}
-	tagSets, err := indexSet.TagSets(e.sfile, []byte(measurement), opt)
+	var (
+		tagSets []*query.TagSet
+		err     error
+	)
+	if e.index.Type() == "inmem" {
+		ts := e.index.(indexTagSets)
+		tagSets, err = ts.TagSets([]byte(measurement), opt)
+	} else {
+		indexSet := tsdb.IndexSet{Indexes: []tsdb.Index{e.index}, SeriesFile: e.sfile}
+		tagSets, err = indexSet.TagSets(e.sfile, []byte(measurement), opt)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -2189,9 +2263,18 @@ func (e *Engine) createVarRefIterator(ctx context.Context, measurement string, o
 		return nil, nil
 	}
 
-	// Determine tagsets for this measurement based on dimensions and filters.
-	indexSet := tsdb.IndexSet{Indexes: []tsdb.Index{e.index}, SeriesFile: e.sfile}
-	tagSets, err := indexSet.TagSets(e.sfile, []byte(measurement), opt)
+	var (
+		tagSets []*query.TagSet
+		err     error
+	)
+	if e.index.Type() == "inmem" {
+		ts := e.index.(indexTagSets)
+		tagSets, err = ts.TagSets([]byte(measurement), opt)
+	} else {
+		indexSet := tsdb.IndexSet{Indexes: []tsdb.Index{e.index}, SeriesFile: e.sfile}
+		tagSets, err = indexSet.TagSets(e.sfile, []byte(measurement), opt)
+	}
+
 	if err != nil {
 		return nil, err
 	}

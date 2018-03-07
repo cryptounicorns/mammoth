@@ -6,12 +6,10 @@ import (
 	client "github.com/influxdata/influxdb/client/v2"
 )
 
-// XXX: Fuck you influxdb!
+// XXX: Influxdb is "awesome"
 // No query escaping functions
 // No query builder
-// Just stupid NewQueryWithParameters which is not cover things like time(1h)
-// I don't know why in the world should I want to buy commercial support for
-// this kind of bullshit!
+// Just stupid NewQueryWithParameters which is not working with things like time(1h)
 
 type QueryBuilder struct {
 	template  *template.Template

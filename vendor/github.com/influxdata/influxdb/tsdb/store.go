@@ -204,7 +204,7 @@ func (s *Store) loadShards() error {
 		s.Logger.Info("Compaction throughput limit disabled")
 	}
 
-	log, logEnd := logger.NewOperation(s.Logger, "Open store", "tsdb.open")
+	log, logEnd := logger.NewOperation(s.Logger, "Open store", "tsdb_open")
 	defer logEnd()
 
 	t := limiter.NewFixed(runtime.GOMAXPROCS(0))
@@ -358,6 +358,7 @@ func (s *Store) Close() error {
 	for _, sfile := range s.sfiles {
 		// Close out the series files.
 		if err := sfile.Close(); err != nil {
+			s.mu.Unlock()
 			return err
 		}
 	}
