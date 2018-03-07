@@ -38,11 +38,11 @@
                 local validator = require("govalidator")
 
                 function validate(p)
-                  if string.len(p["market"]) == 0                                      then return "market should not be empty" end
-                  if not validator.IsIn(p["metric"], "last", "high", "low")            then return "metric is not valid" end
-                  if math.Abs(p["from"] - p["to"]) > (time.Hour * 24 * 7)              then return "from and to fields represents too wide timerange" end
-                  if not validator.IsAlphanumeric(p["market"])                         then return "market should be alphanumeric" end
-                  if not validator.Matches(p["symbolPair"], "^[A-Za-z]+-[A-Za-z]+$") then return "symbolPair is invalid" end
+                  if string.len(p["market"]) == 0                                          then return "market should not be empty" end
+                  if not validator.IsIn(p["metric"], "last", "high", "low")                then return "metric is not valid" end
+                  if math.Abs(p["from"] - p["to"]) > (time.Hour * 24 * 7)                  then return "from and to fields represents too wide timerange" end
+                  if not validator.IsAlphanumeric(p["market"])                             then return "market should be alphanumeric" end
+                  if not validator.Matches(p["symbolPair"], "^[A-Za-z0-9]+-[A-Za-z0-9]+$") then return "symbolPair is invalid" end
 
                   ${extra}
 
