@@ -110,18 +110,19 @@
                 Addr = database;
               };
               Precision = "nanosecond";
-              Query = ''
-                select mean({{ .Escape .Parameters.metric }})
-                  as {{ .Escape .Parameters.metric }}
-                from tickers
-                where
-                  time >= {{ printf "%.0f" .Parameters.from }}
-                  and time <= {{ printf "%.0f" .Parameters.to }}
-                  and market = '{{ .Escape .Parameters.market }}'
-                  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
-                group by time({{ .Escape .Parameters.resolution }})
-              '';
             };
+
+            Query = ''
+              select mean({{ .Escape .Parameters.metric }})
+                as {{ .Escape .Parameters.metric }}
+              from tickers
+              where
+                time >= {{ printf "%.0f" .Parameters.from }}
+                and time <= {{ printf "%.0f" .Parameters.to }}
+                and market = '{{ .Escape .Parameters.market }}'
+                and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
+              group by time({{ .Escape .Parameters.resolution }})
+            '';
           };
           Response = {
             Format = "json";
@@ -156,18 +157,19 @@
                 Addr = database;
               };
               Precision = "nanosecond";
-              Query = ''
-                select
-                  100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100
-                    as {{ .Escape .Parameters.metric }}
-                from tickers
-                where
-                  time >= {{ printf "%.0f" .Parameters.from }}
-                  and time <= {{ printf "%.0f" .Parameters.to }}
-                  and market = '{{ .Escape .Parameters.market }}'
-                  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
-              '';
             };
+
+            Query = ''
+              select
+                100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100
+                  as {{ .Escape .Parameters.metric }}
+              from tickers
+              where
+                time >= {{ printf "%.0f" .Parameters.from }}
+                and time <= {{ printf "%.0f" .Parameters.to }}
+                and market = '{{ .Escape .Parameters.market }}'
+                and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
+            '';
           };
           Response = {
             Format = "json";

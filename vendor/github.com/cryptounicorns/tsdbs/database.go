@@ -12,7 +12,8 @@ import (
 )
 
 type Database interface {
-	Query(map[string]interface{}) (interface{}, error)
+	Query(string, map[string]interface{}) (interface{}, error)
+	Close() error
 }
 
 func FromConfig(c Config, conn Connection, l loggers.Logger) (Database, error) {

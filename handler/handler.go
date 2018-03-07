@@ -8,9 +8,9 @@ import (
 	"github.com/corpix/loggers"
 	"github.com/corpix/loggers/logger/prefixwrapper"
 	"github.com/corpix/reflect"
+	"github.com/cryptounicorns/tsdbs"
 	"github.com/gorilla/mux"
 
-	"github.com/cryptounicorns/tsdbs"
 	"github.com/cryptounicorns/mammoth/parameters"
 	"github.com/cryptounicorns/mammoth/response"
 	"github.com/cryptounicorns/mammoth/transformers"
@@ -89,7 +89,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		ps = v.(map[string]interface{})
 	}
 
-	v, err = h.database.Query(ps)
+	v, err = h.database.Query(h.config.Database.Query, ps)
 	if err != nil {
 		h.handleError(err, rw)
 		return
@@ -163,12 +163,12 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		}
 	}
 
-	dbc, err = tsdbs.Connect(c.Database, log)
+	dbc, err = tsdbs.Connect(c.Database.Config, log)
 	if err != nil {
 		return Handler{}, err
 	}
 
-	db, err = tsdbs.FromConfig(c.Database, dbc, log)
+	db, err = tsdbs.FromConfig(c.Database.Config, dbc, log)
 	if err != nil {
 		return Handler{}, err
 	}

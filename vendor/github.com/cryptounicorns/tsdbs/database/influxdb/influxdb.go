@@ -10,20 +10,25 @@ const (
 )
 
 type InfluxDB struct {
-	config       Config
-	client       client.Client
-	queryBuilder *QueryBuilder
-	log          loggers.Logger
+	config Config
+	client client.Client
+	log    loggers.Logger
 }
 
-func (d *InfluxDB) Query(parameters map[string]interface{}) (interface{}, error) {
+func (d *InfluxDB) Query(query string, parameters map[string]interface{}) (interface{}, error) {
 	var (
+		b   *QueryBuilder
 		q   client.Query
 		r   *client.Response
 		err error
 	)
 
-	q, err = d.queryBuilder.WithParameters(parameters)
+	b, err = QueryBuilderFromTemplate(query, d.config.Database, d.config.Precision)
+	if err != nil {
+		return nil, err
+	}
+
+	q, err = b.WithParameters(parameters)
 	if err != nil {
 		return nil, err
 	}
@@ -41,22 +46,13 @@ func (d *InfluxDB) Query(parameters map[string]interface{}) (interface{}, error)
 	return r.Results, nil
 }
 
+func (d *InfluxDB) Close() error { return nil }
+
 func FromConfig(c Config, cl client.Client, l loggers.Logger) (*InfluxDB, error) {
-	var (
-		qb  *QueryBuilder
-		err error
-	)
-
-	qb, err = QueryBuilderFromTemplate(c.Query, c.Database, c.Precision)
-	if err != nil {
-		return nil, err
-	}
-
 	return &InfluxDB{
-		config:       c,
-		client:       cl,
-		queryBuilder: qb,
-		log:          l,
+		config: c,
+		client: cl,
+		log:    l,
 	}, nil
 }
 
