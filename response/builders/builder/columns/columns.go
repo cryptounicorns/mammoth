@@ -66,6 +66,10 @@ func (c *Columns) Build(v interface{}) (interface{}, error) {
 		r = nr
 	}
 
+	if c.config.Name != "" {
+		r.Name = c.config.Name
+	}
+
 	return r, nil
 }
 

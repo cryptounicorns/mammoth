@@ -22,7 +22,7 @@ imports:
 - name: github.com/corpix/template
   version: b9d46b1ed40a9fb8c42063205026387862a96970
 - name: github.com/cryptounicorns/tsdbs
-  version: 68dc6aadd87bdc2068dcb1645f7803e2849fba2b
+  version: 411e1db1f1a7297ce0796c47f3c539ca1ca9c397
   subpackages:
   - database/influxdb
 - name: github.com/davecgh/go-spew

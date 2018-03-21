@@ -20,7 +20,7 @@
             "Database": "gluttony",
             "Precision": "nanosecond"
           },
-          "Query": "select mean({{ .Escape .Parameters.metric }})\n       as {{ .Escape .Parameters.metric }}\nfrom tickers\nwhere\n  time >= {{ printf \"%.0f\" .Parameters.from }}\n  and time <= {{ printf \"%.0f\" .Parameters.to }}\n  and market = '{{ .Escape .Parameters.market }}'\n  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'\ngroup by time({{ .Escape .Parameters.resolution }})\n",
+          "Query": "select mean({{ .Escape .Parameters.metric }})\n       as {{ .Escape .Parameters.metric }}\nfrom tickers\nwhere\n  time >= {{ .Parameters.from }}\n  and time <= {{ .Parameters.to }}\n  and market = '{{ .Escape .Parameters.market }}'\n  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'\ngroup by time({{ .Escape .Parameters.resolution }})\n",
           "Type": "influxdb"
         },
         "Parameters": [
@@ -82,7 +82,7 @@
             "Database": "gluttony",
             "Precision": "nanosecond"
           },
-          "Query": "select\n  100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100\n  as {{ .Escape .Parameters.metric }}\nfrom tickers\nwhere\n  time >= {{ printf \"%.0f\" .Parameters.from }}\n  and time <= {{ printf \"%.0f\" .Parameters.to }}\n  and market = '{{ .Escape .Parameters.market }}'\n  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'\n",
+          "Query": "select\n  100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100\n  as {{ .Escape .Parameters.metric }}\nfrom tickers\nwhere\n  time >= {{ .Parameters.from }}\n  and time <= {{ .Parameters.to }}\n  and market = '{{ .Escape .Parameters.market }}'\n  and symbolPair = '{{ .Escape .Parameters.symbolPair }}'\n",
           "Type": "influxdb"
         },
         "Parameters": [
@@ -151,6 +151,7 @@
               "Filter": [
                 1
               ],
+              "Name": "symbolpairs",
               "Names": [
                 [
                   1,
@@ -191,10 +192,11 @@
               "Filter": [
                 1
               ],
+              "Name": "markets",
               "Names": [
                 [
                   1,
-                  "symbolPair"
+                  "market"
                 ]
               ]
             },

@@ -33,10 +33,10 @@ func Build(v interface{}) (result.Result, error) {
 				Values:  s.Values,
 				Columns: s.Columns,
 			}
-		}
 
-		// XXX: C'mon, our statements will have mostly one result
-		break
+			// XXX: C'mon, our statements will have mostly one result
+			break
+		}
 	}
 
 	return res, nil

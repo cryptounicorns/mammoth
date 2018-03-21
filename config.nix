@@ -69,7 +69,7 @@
                 end
               '';
           };
-      };
+        };
 
       mkEndpoint = {
         path,
@@ -78,6 +78,7 @@
         shortDescription ? "",
         parameters ? null,
         validator ? null,
+        transformer ? null,
         database ? gluttony,
         response ? columnedResponse
       }: {
@@ -102,8 +103,8 @@
                  as {{ .Escape .Parameters.metric }}
           from tickers
           where
-            time >= {{ printf "%.0f" .Parameters.from }}
-            and time <= {{ printf "%.0f" .Parameters.to }}
+            time >= {{ .Parameters.from }}
+            and time <= {{ .Parameters.to }}
             and market = '{{ .Escape .Parameters.market }}'
             and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
           group by time({{ .Escape .Parameters.resolution }})
@@ -126,6 +127,7 @@
             if err                    then return "invalid resolution syntax" end
             if resolution < time.Hour then return "resolution should be greater or equal 1 hour" end
           '';
+        transformer = null;
       })
 
       (mkEndpoint {
@@ -136,8 +138,8 @@
             as {{ .Escape .Parameters.metric }}
           from tickers
           where
-            time >= {{ printf "%.0f" .Parameters.from }}
-            and time <= {{ printf "%.0f" .Parameters.to }}
+            time >= {{ .Parameters.from }}
+            and time <= {{ .Parameters.to }}
             and market = '{{ .Escape .Parameters.market }}'
             and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
         '';
@@ -158,6 +160,7 @@
             Type = "columns";
             Columns = {
               Database = "influxdb";
+              Name = "symbolpairs";
               Names = [
                 [ 1 "symbolPair" ]
               ];
@@ -179,6 +182,7 @@
             Type = "columns";
             Columns = {
               Database = "influxdb";
+              Name = "markets";
               Names = [
                 [ 1 "market" ]
               ];
