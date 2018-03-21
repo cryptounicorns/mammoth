@@ -17,7 +17,26 @@
   };
   Router =
     let
-      database = "http://127.0.0.1:8086";
+      gluttony = {
+        Type = "influxdb";
+        Influxdb = {
+          Database = "gluttony";
+          Client = {
+            Addr = "http://127.0.0.1:8086";
+          };
+          Precision = "nanosecond";
+        };
+      };
+      columnedResponse = {
+        Format = "json";
+        Builder = {
+          Type = "columns";
+          Columns = {
+            Database = "influxdb";
+          };
+        };
+      };
+
       tickersParameters = extra:
         [
           { Name = "metric";       Type  = "string";  }
@@ -50,137 +69,123 @@
                 end
               '';
           };
+      };
+
+      mkEndpoint = {
+        path,
+        query,
+        method ? "get",
+        shortDescription ? "",
+        parameters ? null,
+        validator ? null,
+        database ? gluttony,
+        response ? columnedResponse
+      }: {
+        Path = path;
+        Method = method;
+        Description = {
+          Short = shortDescription;
         };
-      tickersTransformer = extra:
-        {
-          Type = "lua";
-          Lua = {
-            FunctionName = "transform";
-            Code =
-              ''
-                local strings = require("gostrings")
 
-                function transform(p)
-                  p["symbolPair"] = strings.ToUpper(p["symbolPair"])
-
-                  ${extra}
-
-                  return p
-                end
-              '';
-          };
-        };
+        Handler = {
+          Parameters = parameters;
+          Validator = validator;
+          Database = database // { Query = query; };
+          Response = response;
+       };
+      };
     in [
-      {
-        Path = "/api/v1/tickers";
-        Method = "get";
-        Description = {
-          Short = ''
-            Produces time grouped means on specified ticker metric.
+      (mkEndpoint {
+        path = "/api/v1/tickers";
+        query = ''
+          select mean({{ .Escape .Parameters.metric }})
+                 as {{ .Escape .Parameters.metric }}
+          from tickers
+          where
+            time >= {{ printf "%.0f" .Parameters.from }}
+            and time <= {{ printf "%.0f" .Parameters.to }}
+            and market = '{{ .Escape .Parameters.market }}'
+            and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
+          group by time({{ .Escape .Parameters.resolution }})
+        '';
+        shortDescription = "Produces time grouped means on specified ticker metric";
+        parameters = tickersParameters
+          [
+            {
+              Name = "resolution";
+              Type = "string";
+            }
+         ];
+        validator = tickersValidator
+          ''
+            local resolution
+            local err
+
+            resolution, err = time.ParseDuration(p["resolution"])
+
+            if err                    then return "invalid resolution syntax" end
+            if resolution < time.Hour then return "resolution should be greater or equal 1 hour" end
           '';
-        };
+      })
 
-        Handler = {
-          Parameters = tickersParameters
-            [
-              {
-                Name = "resolution";
-                Type = "string";
-              }
-            ];
+      (mkEndpoint {
+        path = "/api/v1/changes";
+        query = ''
+          select
+            100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100
+            as {{ .Escape .Parameters.metric }}
+          from tickers
+          where
+            time >= {{ printf "%.0f" .Parameters.from }}
+            and time <= {{ printf "%.0f" .Parameters.to }}
+            and market = '{{ .Escape .Parameters.market }}'
+            and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
+        '';
+        shortDescription = "Calculates percent change of the metric";
+        parameters = tickersParameters [ ];
+        validator = tickersValidator "";
+      })
 
-          Validator = tickersValidator
-            ''
-              local resolution
-              local err
-
-              resolution, err = time.ParseDuration(p["resolution"])
-
-              if err                    then return "invalid resolution syntax" end
-              if resolution < time.Hour then return "resolution should be greater or equal 1 hour" end
-            '';
-
-          Transformer = tickersTransformer "";
-
-          Database = {
-            Type = "influxdb";
-            Influxdb = {
-              Database = "gluttony";
-              Client = {
-                Addr = database;
-              };
-              Precision = "nanosecond";
-            };
-
-            Query = ''
-              select mean({{ .Escape .Parameters.metric }})
-                as {{ .Escape .Parameters.metric }}
-              from tickers
-              where
-                time >= {{ printf "%.0f" .Parameters.from }}
-                and time <= {{ printf "%.0f" .Parameters.to }}
-                and market = '{{ .Escape .Parameters.market }}'
-                and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
-              group by time({{ .Escape .Parameters.resolution }})
-            '';
-          };
-          Response = {
-            Format = "json";
-            Builder = {
-              Type = "columns";
-              Columns = {
-                Database = "influxdb";
-              };
+      (mkEndpoint {
+        path = "/api/v1/symbolpairs";
+        query =        ''
+          show tag values from tickers with key = symbolPair
+        '';
+        shortDescription = "Returns known symbol pairs";
+        response = {
+          Format = "json";
+          Builder = {
+            Type = "columns";
+            Columns = {
+              Database = "influxdb";
+              Names = [
+                [ 1 "symbolPair" ]
+              ];
+              Filter = [ 1 ];
             };
           };
         };
-      }
-      {
-        Path = "/api/v1/changes";
-        Method = "get";
-        Description = {
-          Short = ''
-            Calculates percent change of the metric.
-          '';
-        };
+      })
 
-        Handler = {
-          Parameters = tickersParameters [];
-          Validator = tickersValidator "";
-          Transformer = tickersTransformer "";
-
-          Database = {
-            Type = "influxdb";
-            Influxdb = {
-              Database = "gluttony";
-              Client = {
-                Addr = database;
-              };
-              Precision = "nanosecond";
-            };
-
-            Query = ''
-              select
-                100 - (first({{ .Escape .Parameters.metric }}) / last({{ .Escape .Parameters.metric }})) * 100
-                  as {{ .Escape .Parameters.metric }}
-              from tickers
-              where
-                time >= {{ printf "%.0f" .Parameters.from }}
-                and time <= {{ printf "%.0f" .Parameters.to }}
-                and market = '{{ .Escape .Parameters.market }}'
-                and symbolPair = '{{ .Escape .Parameters.symbolPair }}'
-            '';
-          };
-          Response = {
-            Format = "json";
-            Builder = {
-              Type = "columns";
-              Columns = {
-                Database = "influxdb";
-              };
+      (mkEndpoint {
+        path = "/api/v1/markets";
+        query =        ''
+          show tag values from tickers with key = market
+        '';
+        shortDescription = "Returns known markets";
+        response = {
+          Format = "json";
+          Builder = {
+            Type = "columns";
+            Columns = {
+              Database = "influxdb";
+              Names = [
+                [ 1 "market" ]
+              ];
+              Filter = [ 1 ];
             };
           };
         };
-      }
+      })
     ];
 }

@@ -68,10 +68,12 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = h.validator.Validate(ps)
-	if err != nil {
-		h.handleError(err, rw)
-		return
+	if h.validator != nil {
+		err = h.validator.Validate(ps)
+		if err != nil {
+			h.handleError(err, rw)
+			return
+		}
 	}
 
 	if h.transformer != nil {
@@ -148,14 +150,18 @@ func FromConfig(c Config, l loggers.Logger) (Handler, error) {
 		err error
 	)
 
-	ps, err = parameters.FromConfig(c.Parameters)
-	if err != nil {
-		return Handler{}, err
+	if len(c.Parameters) > 0 {
+		ps, err = parameters.FromConfig(c.Parameters)
+		if err != nil {
+			return Handler{}, err
+		}
 	}
 
-	vr, err = validators.FromConfig(c.Validator, log)
-	if err != nil {
-		return Handler{}, err
+	if c.Validator.Type != "" {
+		vr, err = validators.FromConfig(c.Validator, log)
+		if err != nil {
+			return Handler{}, err
+		}
 	}
 
 	if c.Transformer.Type != "" {

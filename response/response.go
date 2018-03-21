@@ -11,10 +11,10 @@ import (
 )
 
 type Response struct {
-	config Config
-	format formats.Format
-	log    loggers.Logger
-	build  builders.Builder
+	config  Config
+	format  formats.Format
+	log     loggers.Logger
+	builder builders.Builder
 }
 
 func (r *Response) Write(v interface{}, rw http.ResponseWriter, req *http.Request) error {
@@ -25,7 +25,7 @@ func (r *Response) Write(v interface{}, rw http.ResponseWriter, req *http.Reques
 		err error
 	)
 
-	res, err = r.build(v)
+	res, err = r.builder.Build(v)
 	if err != nil {
 		return err
 	}
@@ -63,10 +63,10 @@ func FromConfig(c Config, l loggers.Logger) (*Response, error) {
 	}
 
 	return &Response{
-		config: c,
-		format: f,
-		log:    log,
-		build:  b,
+		config:  c,
+		format:  f,
+		log:     log,
+		builder: b,
 	}, nil
 }
 

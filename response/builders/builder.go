@@ -11,7 +11,9 @@ import (
 	"github.com/cryptounicorns/mammoth/response/builders/errors"
 )
 
-type Builder func(interface{}) (interface{}, error)
+type Builder interface {
+	Build(interface{}) (interface{}, error)
+}
 
 func FromConfig(c Config, l loggers.Logger) (Builder, error) {
 	var (
