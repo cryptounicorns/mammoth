@@ -30,13 +30,13 @@ func (b *subqueryBuilder) buildAuxIterator(ctx context.Context, opt IteratorOpti
 	}
 	subOpt.Aux = auxFields
 
-	itrs, err := buildIterators(ctx, b.stmt, b.ic, subOpt)
+	cur, err := buildCursor(ctx, b.stmt, b.ic, subOpt)
 	if err != nil {
 		return nil, err
 	}
 
 	// Construct the iterators for the subquery.
-	input := NewIteratorMapper(itrs, nil, indexes, subOpt)
+	input := NewIteratorMapper(cur, nil, indexes, subOpt)
 	// If there is a condition, filter it now.
 	if opt.Condition != nil {
 		input = NewFilterIterator(input, opt.Condition, subOpt)
@@ -120,13 +120,13 @@ func (b *subqueryBuilder) buildVarRefIterator(ctx context.Context, expr *influxq
 	}
 	subOpt.Aux = auxFields
 
-	itrs, err := buildIterators(ctx, b.stmt, b.ic, subOpt)
+	cur, err := buildCursor(ctx, b.stmt, b.ic, subOpt)
 	if err != nil {
 		return nil, err
 	}
 
 	// Construct the iterators for the subquery.
-	input := NewIteratorMapper(itrs, driver, indexes, subOpt)
+	input := NewIteratorMapper(cur, driver, indexes, subOpt)
 	// If there is a condition, filter it now.
 	if opt.Condition != nil {
 		input = NewFilterIterator(input, opt.Condition, subOpt)

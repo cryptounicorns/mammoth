@@ -33,7 +33,7 @@ func (d *InfluxDB) Query(query string, parameters map[string]interface{}) (inter
 		return nil, err
 	}
 
-	d.log.Debug("Running query template: ", query)
+	d.log.Debugf("Running query: %s", q)
 
 	r, err = d.client.Query(q)
 	if err != nil {

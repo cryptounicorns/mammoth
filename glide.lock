@@ -1,12 +1,12 @@
 hash: cd0662158b899a270282436d78fd29050209ef5854910289de0aa1c12bd0eed2
-updated: 2018-03-21T13:57:32.797486757Z
+updated: 2018-03-21T17:08:44.693507238Z
 imports:
 - name: github.com/asaskevich/govalidator
-  version: 4b3d68f87f176641ffc147420296013aff66ea32
+  version: 7d2e70ef918f16bd6455529af38304d6d025c952
 - name: github.com/corpix/errcomposer
   version: c014294efae0938dcd62e8e92bff858947eeaab0
 - name: github.com/corpix/formats
-  version: 44ae7d799273aeda646d30844a33cb803990ef3d
+  version: ca6b86539565956b3b8019f8a5ad9e04db4ec946
 - name: github.com/corpix/loggers
   version: 6428ebad5a5ef7a300d5dc269a99978de598aace
   subpackages:
@@ -36,15 +36,15 @@ imports:
 - name: github.com/go-playground/universal-translator
   version: 71201497bace774495daed26a3874fd339e0b538
 - name: github.com/go-playground/validator
-  version: 1b8c8e19cd250435025214492d9a08411d760fdd
+  version: 8ce234ff024d85b3848e485decba806385d6e276
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 07ba1fd60e210dc5cc6f86ec25dc9ecc7c95c295
+  version: 4dbd923b0c9e99ff63ad54b0e9705ff92d3cdb06
 - name: github.com/imdario/mergo
   version: 0d4b488675fdec1dde48751b05ab530cf0b630e1
 - name: github.com/influxdata/influxdb
-  version: 6ac835404e7e64ea7299a6eebcce1ab1ef15fe3c
+  version: 307aac873a7aa39094e87d3e907b54435833e05f
   subpackages:
   - client/v2
   - models
@@ -61,23 +61,24 @@ imports:
   - endpoint
   - swagger
 - name: github.com/sirupsen/logrus
-  version: f4ee69125072b22721efbe639bd0da9c9d19b8cc
+  version: 90150a8ed11b6ce285e77e8af2b0109559ce4777
 - name: github.com/urfave/cli
   version: 8e01ec4cd3e2d84ab2fe90d8210528ffbb06d8ff
 - name: github.com/yuin/gopher-lua
-  version: 7d7bc8747e3f614c5c587729a341fe7d8903cdb8
+  version: 84ea3a3c79b3c4b3b39606cc96f255cd63635ce0
   subpackages:
   - ast
   - parse
   - pm
 - name: golang.org/x/crypto
-  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  version: c3a3ad6d03f7a915c0f7e194b7152974bb73d287
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 062cd7e4e68206d8bab9b18396626e855c992658
+  version: d8e400bc7db4870d786864138af681469693d18c
   subpackages:
   - unix
+  - windows
 - name: gopkg.in/yaml.v2
   version: 7f97868eec74b32b0982dd158a51a446d1da7eb5
 testImports: []

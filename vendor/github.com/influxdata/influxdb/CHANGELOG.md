@@ -1,4 +1,24 @@
-v1.5.0 [2017-03-06]
+v1.6.0 [unreleased]
+-------------------
+
+### Breaking changes
+
+-	If math is used with the same selector multiple times, it will now act as a selector rather than an aggregate. See [#9563](https://github.com/influxdata/influxdb/pull/9563) for details.
+
+### Features
+
+-	[#9429](https://github.com/influxdata/influxdb/pull/9429): Support proxy environment variables in the influx client.
+-	[#9499](https://github.com/influxdata/influxdb/pull/9499): Implement basic trigonometry functions.
+
+### Bugfixes
+
+-	[#9553](https://github.com/influxdata/influxdb/pull/9553): Support setting the log level through the environment variable.
+-	[#9551](https://github.com/influxdata/influxdb/pull/9551): Fix panic when checking fieldsets.
+-	[#9573](https://github.com/influxdata/influxdb/pull/9573): Ensure correct number of tags parsed when commas used.
+-	[#9580](https://github.com/influxdata/influxdb/pull/9580): Fix data race in WAL.
+-	[#9586](https://github.com/influxdata/influxdb/pull/9586): Allow SHOW SERIES kill.
+
+v1.5.0 [2018-03-06]
 -------------------
 
 ### Breaking changes
